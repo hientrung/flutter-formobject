@@ -48,18 +48,35 @@ class FOObject extends FOField {
 
   @override
   FOField operator [](dynamic index) {
+    if (index is! String) {
+      throw 'Index should be String';
+    }
     if (!_items.containsKey(index)) {
-      throw 'Not found ${fullName.isNotEmpty ? "$fullName.$index" : "$index"}';
+      throw 'Not found ${fullName.isNotEmpty ? "$fullName.$index" : index}';
     }
     return _items[index]!;
+  }
+
+  @override
+  FOSubscription onChanged(FOChangedHandler handler) {
+    if (subscriptions.isEmpty) {
+      for (var it in _items.values) {
+        _subs[name] = it.onChanged((_) {
+          notify();
+        });
+      }
+    }
+    return super.onChanged(handler);
   }
 
   void add(String name, FOField field) {
     if (_items.containsKey(name)) throw '$name already exist';
     _items[name] = field;
-    _subs[name] = field.onChanged((value) {
-      notify();
-    });
+    if (subscriptions.isNotEmpty) {
+      _subs[name] = field.onChanged((_) {
+        notify();
+      });
+    }
   }
 
   void remove(String name) {

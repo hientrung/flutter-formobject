@@ -90,6 +90,17 @@ void main() {
     expect(f.hasChange, false);
     f['email'].value = 'test@test.com';
     expect(f.isValid, true);
+    f.value = {
+      'address': {'city': 'Ha Noi'}
+    };
+    expect(f['address']['city'].value, 'Ha Noi');
+    expect(f.value['address']['city'], 'Ha Noi');
+    var sub = f.onChanged((value) {
+      print('changed raised');
+      expect(value['address']['city'], 'Test');
+    });
+    f['address']['city'].value = 'Test';
+    sub.dispose();
     print(f.value);
   });
 }

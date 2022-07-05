@@ -102,7 +102,8 @@ class FOForm {
     }
   }
 
-  void onChanged(FOChangedHandler handler) => _root.onChanged(handler);
+  FOSubscription onChanged(FOChangedHandler handler) =>
+      _root.onChanged(handler);
 
   dynamic get value => _root.value;
 
