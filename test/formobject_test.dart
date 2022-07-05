@@ -6,13 +6,22 @@ import 'package:formobject/formobject.dart';
 
 void main() {
   test('Validate async', () async {
-    var vdASync = FOValidator((val) {
+    var field = FOProperty(
+      name: 'test',
+      type: FOFieldType.string,
+      meta: {},
+      initValue: 'ASDF',
+    );
+    var vdASync = FOValidator(field, (val) {
       return Future.delayed(
         const Duration(seconds: 1),
         () => val == 'a' ? 'invalid' : null,
       );
-    });
-    var vd = FOValidator.all([vdASync, FOValidator.required('required')]);
+    }, null);
+    var vd = FOValidator.all(field, [
+      vdASync,
+      FOValidator.required(field, 'required', null),
+    ]);
     var s = await vd.validate('a');
     expect(s, 'invalid');
     s = await vd.validate('b');

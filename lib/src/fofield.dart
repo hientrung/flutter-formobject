@@ -36,7 +36,7 @@ abstract class FOField {
   final FOFieldType type;
   final Map<String, dynamic> meta;
   final subscriptions = <FOSubscription>[];
-  final FOValidator? validator;
+  late final FOValidator? validator;
   final FOField? parent;
   FOValidStatus _status = FOValidStatus.pending;
   bool _notifying = false;
@@ -47,12 +47,15 @@ abstract class FOField {
     required this.name,
     required this.type,
     required this.meta,
-  }) : validator = FOValidator.fromJson(meta) {
+  }) {
+    validator = FOValidator.fromJson(this, meta);
     //validate on changed value
     if (validator != null) {
       onChanged((_) {
         _doValidate();
       });
+    } else {
+      _status = FOValidStatus.valid;
     }
     //combine full name
     var names = <String>[name];
@@ -86,9 +89,11 @@ abstract class FOField {
   bool get hasChange;
 
   void _doValidate() {
+    var vd = validator!;
     final old = _status;
     _status = FOValidStatus.validating;
-    var s = validator!.validate(value);
+    var s = vd.validate(value);
+
     void completed(String? res) {
       _status = res == null ? FOValidStatus.valid : FOValidStatus.invalid;
       if (!_notifying &&
@@ -98,20 +103,16 @@ abstract class FOField {
       }
     }
 
-    if (s is Future<String?>) {
+    if (s != null && s is Future<String?>) {
       s.then((val) => completed(val));
     } else {
-      completed(s);
+      completed(s as String?);
     }
   }
 
   bool validate() {
-    if (_status == FOValidStatus.pending) {
-      if (validator != null) {
-        _doValidate();
-      } else {
-        _status = FOValidStatus.valid;
-      }
+    if (_status == FOValidStatus.pending && validator != null) {
+      _doValidate();
     }
     return isValid;
   }
@@ -129,6 +130,11 @@ abstract class FOField {
 
   Iterable<FOField> get childs =>
       throw '"$fullName" is not support childs field';
+
+  dynamic eval(String expression) {
+    if (expression.isEmpty) return null;
+    throw 'Eval is not supported yet';
+  }
 
   void dispose() {
     subscriptions.clear();
