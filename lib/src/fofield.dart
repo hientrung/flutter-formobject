@@ -56,8 +56,10 @@ abstract class FOField {
     }
     //combine full name
     var names = <String>[name];
-    while (parent != null && parent!.name.isNotEmpty) {
-      names.insert(0, parent!.name);
+    var p = parent;
+    while (p != null && p.name.isNotEmpty) {
+      names.insert(0, p.name);
+      p = p.parent;
     }
     _fullName = names.join('.');
   }
@@ -74,6 +76,8 @@ abstract class FOField {
   }
 
   dynamic get value;
+
+  set value(dynamic val);
 
   void reset();
 
@@ -117,6 +121,12 @@ abstract class FOField {
   FOValidStatus get status => _status;
 
   String get fullName => _fullName;
+
+  FOField operator [](dynamic index) =>
+      throw '"$fullName" is not support childs field';
+
+  Iterable<FOField> get childs =>
+      throw '"$fullName" is not support childs field';
 
   void dispose() {
     subscriptions.clear();

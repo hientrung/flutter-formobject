@@ -73,24 +73,40 @@ class FOForm {
             type: FOFieldType.object,
             meta: meta,
           );
-          String? valTypeName = meta['valueType'];
-          if (valTypeName == null) throw 'Not found key "valueType"';
-          Map<String, dynamic>? valType = json['meta'][valTypeName];
-          if (valType == null) throw 'Not found meta type "$valTypeName"';
-          for (var it in valType.entries) {
-            obj.items[it.key] = _createField(
-                obj, it.key, data == null ? null : data[it.key], it.value);
+          String? objectTypeName = meta['objectType'];
+          if (objectTypeName == null) throw 'Not found key "objectType"';
+          Map<String, dynamic>? objectType = json['meta'][objectTypeName];
+          if (objectType == null) throw 'Not found meta type "$objectTypeName"';
+          if (data is! Map<String, dynamic>?) {
+            throw 'Invalid data type, expected Map object';
+          }
+          for (var it in objectType.entries) {
+            obj.add(
+                it.key,
+                _createField(
+                  obj,
+                  it.key,
+                  data == null ? null : data[it.key],
+                  it.value,
+                ));
           }
           return obj;
         default:
           throw 'Not support type: $type';
       }
     } catch (ex) {
-      throw 'Can not create field "${parent != null ? "${parent.fullName}.$name" : name}": ${ex.toString()}';
+      if (parent == null) {
+        throw 'Can not create form data\n$ex';
+      }
+      throw 'Can not create field "${parent.fullName.isNotEmpty ? "${parent.fullName}.$name" : name}"\n$ex';
     }
   }
 
+  void onChanged(FOChangedHandler handler) => _root.onChanged(handler);
+
   dynamic get value => _root.value;
+
+  set value(dynamic val) => _root.value = val;
 
   bool validate() => _root.validate();
 
@@ -100,12 +116,7 @@ class FOForm {
 
   bool get hasChange => _root.hasChange;
 
-  T getField<T extends FOField>(String name) {
-    if (name.isEmpty) return _root as T;
-    throw 'Not found field: $name';
-  }
+  Iterable<FOField> get childs => _root.childs;
 
-  FOProperty<T?> getProperty<T>(String name) {
-    return getField<FOProperty<T?>>(name);
-  }
+  FOField operator [](dynamic index) => _root[index];
 }

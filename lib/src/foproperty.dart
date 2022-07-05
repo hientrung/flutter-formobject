@@ -15,9 +15,11 @@ class FOProperty<T> extends FOField {
   @override
   T get value => _value;
 
-  set value(T v) {
-    if (v != _value) {
-      _value = v;
+  @override
+  set value(val) {
+    if (val is! T) throw 'Can not set value, expected type $T';
+    if (val != _value) {
+      _value = val;
       notify();
     }
   }

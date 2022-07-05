@@ -1,14 +1,22 @@
 import 'dart:async';
 
-class FOValidator {
-  final FutureOr<String?> Function(dynamic value) validate;
+typedef FOValidateHandler = FutureOr<String?> Function(dynamic value);
 
-  FOValidator(this.validate);
+class FOValidator {
+  final String? condition;
+  final FOValidateHandler validate;
+
+  FOValidator(this.validate, [this.condition]);
 
   static FOValidator? fromJson(Map<String, dynamic> meta) {
     var res = <FOValidator>[];
-    if (meta.containsKey('required')) {
-      res.add(FOValidator.required(meta['required']));
+    try {
+      if (meta.containsKey('required')) {
+        res.add(FOValidator.required(
+            meta['required']['message'], meta['required']['condition']));
+      }
+    } catch (ex) {
+      throw 'Invalid config validate: $meta. $ex';
     }
     if (res.isEmpty) return null;
     if (res.length == 1) return res[0];
@@ -27,14 +35,16 @@ class FOValidator {
       }
 
       return exec(0);
-    });
+    }, null);
   }
 
-  factory FOValidator.required(String message) {
-    return FOValidator((value) => value == null ||
-            (value is num && value == 0) ||
-            (value is String && value == "")
-        ? message
-        : null);
+  factory FOValidator.required(String message, [String? condition]) {
+    return FOValidator(
+        (value) => value == null ||
+                (value is num && value == 0) ||
+                (value is String && value == "")
+            ? message
+            : null,
+        condition);
   }
 }
