@@ -58,7 +58,7 @@ class FOObject extends FOField {
     if (_items.containsKey(name)) throw '$name already exist';
     _items[name] = field;
     _subs[name] = field.onChanged((value) {
-      if (subscriptions.isNotEmpty) notify();
+      notify();
     });
   }
 

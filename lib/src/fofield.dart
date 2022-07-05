@@ -68,9 +68,11 @@ abstract class FOField {
       FOSubscription(subscriptions, handler);
 
   void notify() {
+    if (subscriptions.isEmpty) return;
     _notifying = true;
+    final val = value;
     for (var it in subscriptions) {
-      it.handler(value);
+      it.handler(val);
     }
     _notifying = false;
   }
