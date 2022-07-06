@@ -21,7 +21,7 @@ expression:
 	| IDENTIFIER											# IdentifierExpression;
 
 constant:
-	| TRUE
+	 TRUE
 	| FALSE
 	| NULL
 	| STRING_LITERAL
@@ -75,11 +75,8 @@ fragment ESC:
 	);
 
 STRING_LITERAL: DBQ ( ~('"' | '\\') | ESC)* DBQ;
-//format date #yyyy-mm-dd hh:mm:ss#, ss can optional, only year required 4 digit numbers
 DATE_LITERAL:
-	SHARP DIGIT DIGIT DIGIT DIGIT MINUS DIGIT DIGIT? MINUS DIGIT DIGIT? (
-		' ' DIGIT DIGIT? COLON DIGIT DIGIT? (COLON DIGIT DIGIT?)?
-	)? SHARP;
+	SHARP ('0'..'9' | 'T' |'Z' | '+' |'-' |'.'|':'|' ')+ SHARP;
 NUM_DOUBLE: (NUM_INT DOT DIGIT+) EXPONENT?;
 NUM_INT: DIGIT+;
 

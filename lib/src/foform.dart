@@ -41,7 +41,7 @@ class FOForm {
             name: name,
             type: FOFieldType.int,
             meta: meta,
-            initValue: data,
+            initValue: int.tryParse(data.toString()),
           );
         case 'double':
           return FOProperty<double?>(
@@ -49,7 +49,7 @@ class FOForm {
             name: name,
             type: FOFieldType.double,
             meta: meta,
-            initValue: data,
+            initValue: double.tryParse(data.toString()),
           );
         case 'bool':
           return FOProperty<bool?>(
@@ -133,6 +133,8 @@ class FOForm {
   FOField operator [](dynamic index) => _root[index];
 
   String? get error => _root.error;
+
+  dynamic eval(String expression) => _root.eval(expression);
 
   T getRoot<T extends FOField>() => _root as T;
 

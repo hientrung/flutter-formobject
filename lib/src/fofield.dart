@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:formobject/src/foexpression.dart';
+
 import './fovalidator.dart';
 
 enum FOFieldType {
@@ -143,8 +145,8 @@ abstract class FOField {
       throw '"$fullName" is not support childs field';
 
   dynamic eval(String expression) {
-    if (expression.isEmpty) return null;
-    throw 'Eval is not supported yet';
+    final expr = FOExpression(this);
+    return expr.eval(expression);
   }
 
   void dispose() {

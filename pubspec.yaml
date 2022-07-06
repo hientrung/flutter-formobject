@@ -8,7 +8,7 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  antlr4: ^4.10.1
+  antlr4: 4.10.1
   flutter:
     sdk: flutter
 

@@ -162,6 +162,7 @@ void main() {
         }
       }
     });
+    FOField.customError = null;
     FOField.customErrors = (errors) => errors.join('<br/>');
     expect(f.error, 'Name required<br/>required');
   });
