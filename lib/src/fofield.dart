@@ -9,7 +9,7 @@ enum FOFieldType {
   bool,
   datetime,
   object,
-  array,
+  list,
   expression,
 }
 

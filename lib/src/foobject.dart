@@ -3,18 +3,25 @@ import './fofield.dart';
 class FOObject extends FOField {
   final _items = <String, FOField>{};
   final _subs = <String, FOSubscription>{};
+  bool _reseting = false;
+  bool _resetingNotify = false;
 
   FOObject({
     super.parent,
     required super.name,
-    required super.type,
     required super.meta,
-  });
+  }) : super(type: FOFieldType.object);
 
   @override
   void reset() {
+    _reseting = true;
     for (var it in _items.values) {
       it.reset();
+    }
+    _reseting = false;
+    if (_resetingNotify) {
+      notify();
+      _resetingNotify = false;
     }
   }
 
@@ -27,8 +34,14 @@ class FOObject extends FOField {
     if (val is! Map<String, dynamic>) {
       throw 'Can not set value, expected type Map';
     }
+    _reseting = true;
     for (var it in val.entries) {
       _items[it.key]?.value = it.value;
+    }
+    _reseting = false;
+    if (_resetingNotify) {
+      notify();
+      _resetingNotify = false;
     }
   }
 
@@ -61,12 +74,20 @@ class FOObject extends FOField {
   FOSubscription onChanged(FOChangedHandler handler) {
     if (subscriptions.isEmpty) {
       for (var it in _items.values) {
-        _subs[name] = it.onChanged((_) {
-          notify();
-        });
+        _subs[it.name] = _listenChild(it);
       }
     }
     return super.onChanged(handler);
+  }
+
+  FOSubscription _listenChild(FOField field) {
+    return field.onChanged((_) {
+      if (_reseting) {
+        _resetingNotify = true;
+        return;
+      }
+      notify();
+    });
   }
 
   @override
@@ -94,9 +115,7 @@ class FOObject extends FOField {
     if (_items.containsKey(name)) throw '$name already exist';
     _items[name] = field;
     if (subscriptions.isNotEmpty) {
-      _subs[name] = field.onChanged((_) {
-        notify();
-      });
+      _subs[name] = _listenChild(field);
     }
   }
 

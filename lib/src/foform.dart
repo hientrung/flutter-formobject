@@ -70,7 +70,6 @@ class FOForm {
           var obj = FOObject(
             parent: parent,
             name: name,
-            type: FOFieldType.object,
             meta: meta,
           );
           String? objectTypeName = meta['objectType'];
