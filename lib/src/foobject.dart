@@ -69,6 +69,27 @@ class FOObject extends FOField {
     return super.onChanged(handler);
   }
 
+  @override
+  String? get error {
+    var errs = <String>[];
+    var e = super.error;
+    if (e != null) errs.add(e);
+    for (var it in _items.values) {
+      e = it.error;
+      if (e != null) errs.add(e);
+    }
+    if (errs.isEmpty) return null;
+    if (FOField.customErrors != null) return FOField.customErrors!(errs);
+    return errs.join('; ');
+  }
+
+  @override
+  void dispose() {
+    _items.clear();
+    _subs.clear();
+    super.dispose();
+  }
+
   void add(String name, FOField field) {
     if (_items.containsKey(name)) throw '$name already exist';
     _items[name] = field;

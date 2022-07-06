@@ -112,4 +112,45 @@ void main() {
     sub.dispose();
     print(f.value);
   });
+
+  test('Check field error', () {
+    var f = FOForm({
+      'data': {'name': ''},
+      'meta': {
+        ':root': {'type': 'object', 'objectType': 'rootType'},
+        'rootType': {
+          'name': {
+            'type': 'string',
+            'required': {'message': 'Name required'}
+          }
+        }
+      }
+    });
+    expect(f.error, 'Name required');
+    FOField.customError = (field, error) => '${field.name} should required';
+    f['name'].value = null;
+    expect(f.error, 'name should required');
+    f.dispose();
+  });
+
+  test('Check object errors', () {
+    var f = FOForm({
+      'data': {'name': ''},
+      'meta': {
+        ':root': {'type': 'object', 'objectType': 'rootType'},
+        'rootType': {
+          'name': {
+            'type': 'string',
+            'required': {'message': 'Name required'}
+          },
+          'email': {
+            'type': 'string',
+            'required': {'message': 'required'}
+          }
+        }
+      }
+    });
+    FOField.customErrors = (errors) => errors.join('<br/>');
+    expect(f.error, 'Name required<br/>required');
+  });
 }

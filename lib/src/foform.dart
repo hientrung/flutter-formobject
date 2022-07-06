@@ -120,4 +120,10 @@ class FOForm {
   Iterable<FOField> get childs => _root.childs;
 
   FOField operator [](dynamic index) => _root[index];
+
+  String? get error => _root.error;
+
+  void dispose() {
+    _root.dispose();
+  }
 }

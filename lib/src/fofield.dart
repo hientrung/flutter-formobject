@@ -41,6 +41,7 @@ abstract class FOField {
   FOValidStatus _status = FOValidStatus.pending;
   bool _notifying = false;
   String _fullName = '';
+  String? _error;
 
   FOField({
     this.parent,
@@ -95,6 +96,11 @@ abstract class FOField {
     var s = vd.validate(value);
 
     void completed(String? res) {
+      if (res != null && customError != null) {
+        _error = customError!(this, res);
+      } else {
+        _error = res;
+      }
       _status = res == null ? FOValidStatus.valid : FOValidStatus.invalid;
       if (!_notifying &&
           ((old == FOValidStatus.pending && _status == FOValidStatus.invalid) ||
@@ -125,6 +131,11 @@ abstract class FOField {
 
   String get fullName => _fullName;
 
+  String? get error {
+    if (_status == FOValidStatus.pending) validate();
+    return _error;
+  }
+
   FOField operator [](dynamic index) =>
       throw '"$fullName" is not support childs field';
 
@@ -139,4 +150,7 @@ abstract class FOField {
   void dispose() {
     subscriptions.clear();
   }
+
+  static String Function(FOField field, String error)? customError;
+  static String Function(List<String> errors)? customErrors;
 }
