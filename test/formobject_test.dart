@@ -165,4 +165,104 @@ void main() {
     FOField.customErrors = (errors) => errors.join('<br/>');
     expect(f.error, 'Name required<br/>required');
   });
+
+  test('Check list int', () {
+    var f = FOForm({
+      'data': [1, 2, 3],
+      'meta': {
+        ':root': {
+          'type': 'list',
+          'itemType': {'type': 'int'},
+          'rules': [
+            {'type': 'range', 'message': 'invalid length', 'min': 4},
+          ]
+        }
+      }
+    });
+    expect(f.isValid, false);
+    f.getRoot<FOList>().add(4);
+    expect(f.isValid, true);
+  });
+
+  test('Check list object', () {
+    var f = FOForm({
+      'data': {
+        'name': 'Tester',
+        'items': [
+          {'task': 'Step 1', 'status': 'passed', 'checked': true},
+          {'task': 'Step 2', 'status': 'doing', 'checked': false},
+          {'task': '', 'status': 'invalid', 'checked': false},
+        ]
+      },
+      'meta': {
+        ':root': {
+          'type': 'object',
+          'objectType': 'Tester',
+        },
+        'Tester': {
+          'name': {
+            'type': 'string',
+            'rules': [
+              {'type': 'required', 'message': 'Required'}
+            ]
+          },
+          'items': {
+            'type': 'list',
+            'itemType': {'type': 'object', 'objectType': 'Task'}
+          },
+        },
+        'Task': {
+          'task': {
+            'type': 'string',
+            'rules': [
+              {'type': 'required', 'message': 'Required'}
+            ]
+          },
+          'status': {'type': 'string'},
+          'checked': {'type': 'bool'},
+        }
+      }
+    });
+
+    expect(f.isValid, false);
+    f['items'][2]['task'].value = 'Testing';
+    expect(f.isValid, true);
+    print(f.value);
+  });
+
+  test('Check nested list, object', () {
+    var f = FOForm({
+      'data': [
+        [
+          {'name': 'A'},
+          {'name': 'B'}
+        ],
+        [
+          {'name': '1'},
+          {'name': '2'},
+          {'name': null}
+        ],
+      ],
+      'meta': {
+        ':root': {
+          'type': 'list',
+          'itemType': {
+            'type': 'list',
+            'itemType': {'type': 'object', 'objectType': 'Test'}
+          },
+        },
+        'Test': {
+          'name': {
+            'type': 'string',
+            'rules': [
+              {'type': 'required', 'message': 'Name required'}
+            ]
+          }
+        }
+      }
+    });
+    expect(f.isValid, false);
+    f[1][2]['name'].value = 'ASDF';
+    expect(f.isValid, true);
+  });
 }

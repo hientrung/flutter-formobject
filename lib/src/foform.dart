@@ -1,3 +1,4 @@
+import 'package:formobject/src/folist.dart';
 import 'package:formobject/src/foobject.dart';
 
 import './fofield.dart';
@@ -67,11 +68,6 @@ class FOForm {
             initValue: data,
           );
         case 'object':
-          var obj = FOObject(
-            parent: parent,
-            name: name,
-            meta: meta,
-          );
           String? objectTypeName = meta['objectType'];
           if (objectTypeName == null) throw 'Not found key "objectType"';
           Map<String, dynamic>? objectType = json['meta'][objectTypeName];
@@ -79,6 +75,11 @@ class FOForm {
           if (data is! Map<String, dynamic>?) {
             throw 'Invalid data type, expected Map object';
           }
+          var obj = FOObject(
+            parent: parent,
+            name: name,
+            meta: meta,
+          );
           for (var it in objectType.entries) {
             obj.add(
                 it.key,
@@ -90,6 +91,17 @@ class FOForm {
                 ));
           }
           return obj;
+        case 'list':
+          Map<String, dynamic>? itemType = meta['itemType'];
+          if (itemType == null) throw 'Not found key "itemType"';
+          return FOList(
+            parent: parent,
+            name: name,
+            meta: meta,
+            initValue: data ?? [],
+            creator: (lst, val) =>
+                _createField(lst, 'list-item', val, itemType),
+          );
         default:
           throw 'Not support type: $type';
       }
@@ -121,6 +133,8 @@ class FOForm {
   FOField operator [](dynamic index) => _root[index];
 
   String? get error => _root.error;
+
+  T getRoot<T extends FOField>() => _root as T;
 
   void dispose() {
     _root.dispose();
