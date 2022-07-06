@@ -36,7 +36,9 @@ void main() {
       'meta': {
         ':root': {
           'type': 'string',
-          'required': {'message': 'value required'},
+          'rules': [
+            {'type': 'required', 'message': 'value required'}
+          ]
         }
       }
     });
@@ -76,12 +78,16 @@ void main() {
         'person': {
           'name': {
             'type': 'string',
-            'required': {'message': 'Required'},
+            'rules': [
+              {'type': 'required', 'message': 'Required'}
+            ]
           },
           'email': {
             'type': 'string',
-            'required': {'message': 'Required'},
-            'email': {'message': 'Invalid email'},
+            'rules': [
+              {'type': 'required', 'message': 'Required'},
+              {'type': 'email', 'message': 'Invalid email'}
+            ]
           },
           'address': {
             'type': 'object',
@@ -121,7 +127,9 @@ void main() {
         'rootType': {
           'name': {
             'type': 'string',
-            'required': {'message': 'Name required'}
+            'rules': [
+              {'type': 'required', 'message': 'Name required'}
+            ]
           }
         }
       }
@@ -141,11 +149,15 @@ void main() {
         'rootType': {
           'name': {
             'type': 'string',
-            'required': {'message': 'Name required'}
+            'rules': [
+              {'type': 'required', 'message': 'Name required'}
+            ]
           },
           'email': {
             'type': 'string',
-            'required': {'message': 'required'}
+            'rules': [
+              {'type': 'required', 'message': 'required'}
+            ]
           }
         }
       }

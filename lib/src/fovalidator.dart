@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:formobject/formobject.dart';
+import './fofield.dart';
 
 typedef FOValidateHandler = FutureOr<String?> Function(dynamic value);
 
@@ -29,59 +29,69 @@ class FOValidator {
   static FOValidator? fromJson(FOField field, Map<String, dynamic> meta) {
     var res = <FOValidator>[];
     try {
-      if (meta.containsKey('required')) {
-        res.add(FOValidator.required(
-          field,
-          meta['required']['message'],
-          meta['required']['condition'],
-        ));
-      }
-      if (meta.containsKey('requiredTrue')) {
-        res.add(FOValidator.requiredTrue(
-          field,
-          meta['requiredTrue']['message'],
-          meta['requiredTrue']['condition'],
-        ));
-      }
-      if (meta.containsKey('range')) {
-        res.add(FOValidator.range(
-          field,
-          meta['range']['message'],
-          meta['range']['condition'],
-          meta['range']['min'],
-          meta['range']['max'],
-        ));
-      }
-      if (meta.containsKey('email')) {
-        res.add(FOValidator.email(
-          field,
-          meta['email']['message'],
-          meta['email']['condition'],
-        ));
-      }
-      if (meta.containsKey('match')) {
-        res.add(FOValidator.match(
-          field,
-          meta['match']['message'],
-          meta['match']['condition'],
-          meta['match']['pattern'],
-        ));
-      }
-      if (meta.containsKey('equal')) {
-        res.add(FOValidator.equal(
-          field,
-          meta['equal']['message'],
-          meta['equal']['condition'],
-          meta['equal']['expression'],
-        ));
-      }
-      if (meta.containsKey('custom')) {
-        res.add(FOValidator.custom(
-          field,
-          meta['custom']['message'],
-          meta['custom']['condition'],
-          meta['custom']['expression'],
-        ));
+      List<dynamic>? rules = meta['rules'];
+      if (rules != null) {
+        for (Map<String, dynamic> it in rules) {
+          var type = it['type'];
+          switch (type) {
+            case 'required':
+              res.add(FOValidator.required(
+                field,
+                it['message'],
+                it['condition'],
+              ));
+              break;
+            case 'requiredTrue':
+              res.add(FOValidator.requiredTrue(
+                field,
+                it['message'],
+                it['condition'],
+              ));
+              break;
+            case 'range':
+              res.add(FOValidator.range(
+                field,
+                it['message'],
+                it['condition'],
+                it['min'],
+                it['max'],
+              ));
+              break;
+            case 'email':
+              res.add(FOValidator.email(
+                field,
+                it['message'],
+                it['condition'],
+              ));
+              break;
+            case 'match':
+              res.add(FOValidator.match(
+                field,
+                it['message'],
+                it['condition'],
+                it['pattern'],
+              ));
+              break;
+            case 'equal':
+              res.add(FOValidator.equal(
+                field,
+                it['message'],
+                it['condition'],
+                it['expression'],
+              ));
+              break;
+            case 'expression':
+              res.add(FOValidator.expression(
+                field,
+                it['message'],
+                it['condition'],
+                it['expression'],
+              ));
+              break;
+            default:
+              throw 'Not supported rule type "$type"';
+          }
+        }
       }
     } catch (ex) {
       throw 'Invalid config validate: $meta\n$ex';
@@ -216,7 +226,7 @@ class FOValidator {
     );
   }
 
-  factory FOValidator.custom(
+  factory FOValidator.expression(
     FOField field,
     String message,
     String? condition,
