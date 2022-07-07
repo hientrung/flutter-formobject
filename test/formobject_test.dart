@@ -372,4 +372,35 @@ void main() {
     f['desc'].value = 'asdf';
     expect(f.isValid, true);
   });
+
+  test('Validate service', () async {
+    FOValidator.requestHandler = (url, value, data) async {
+      print('service: $value');
+      await Future.delayed(const Duration(milliseconds: 500));
+      return value == 'test';
+    };
+
+    final f = FOForm({
+      'data': 'test',
+      'meta': {
+        ':root': {
+          'type': 'string',
+          'rules': [
+            {'type': 'service', 'message': 'invalid', 'url': '/test'}
+          ]
+        }
+      }
+    });
+
+    f.onStatusChanged((v) => print(v));
+
+    expect(f.isValid, false);
+    f.value = 'a';
+    f.value = 'test';
+    await Future.delayed(const Duration(
+        milliseconds: 2000)); //default debounce=1s + requesHandler delay 500ms
+    expect(f.isValid, true);
+    await Future.delayed(const Duration(milliseconds: 100));
+    FOValidator.requestHandler = null;
+  });
 }

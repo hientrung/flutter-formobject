@@ -4,6 +4,8 @@ import './fofield.dart';
 import './foobject.dart';
 
 typedef FOValidateHandler = FutureOr<String?> Function(dynamic value);
+typedef FORequestHandler = Future<dynamic> Function(
+    String url, dynamic value, Map<String, dynamic> data);
 
 class FOValidator {
   final String? condition;
@@ -26,6 +28,13 @@ class FOValidator {
     if (!b) return null;
     return handler(value);
   }
+
+  ///Implement the request to validate by call a service in server side
+  ///
+  ///The result should be a boolean, true mean valid, else it use 'message' to response
+  ///
+  ///Or the result is string that used for 'message', if string is empty then the value is valid
+  static FORequestHandler? requestHandler;
 
   static FOValidator? fromJson(FOField field, Map<String, dynamic> meta) {
     var res = <FOValidator>[];
@@ -91,13 +100,13 @@ class FOValidator {
               break;
             case 'service':
               res.add(FOValidator.service(
-                  field,
-                  it['message'],
-                  it['condition'],
-                  it['url'],
-                  it['fieldNames'] ?? <String>[],
-                  it['debounce'] ?? 1,
-                  it['expected']));
+                field,
+                it['message'],
+                it['condition'],
+                it['url'],
+                it['fieldNames'] ?? <String>[],
+                it['debounce'] ?? 1,
+              ));
               break;
             default:
               throw 'Not supported rule type "$type"';
@@ -258,7 +267,10 @@ class FOValidator {
   }
 
   factory FOValidator.service(FOField field, String message, String? condition,
-      String url, List<String> fieldNames, int debounce, String? expected) {
+      String url, List<String> fieldNames, int debounce) {
+    if (requestHandler == null) {
+      throw 'Need implement FOValidator.requestHandler to call validate via service';
+    }
     Timer? timer;
     return FOValidator(
       field,
@@ -281,7 +293,17 @@ class FOValidator {
             }
           }
           //post to service
-          throw 'TODO:';
+          requestHandler!(url, value, data).then((res) {
+            if (res == null) {
+              result.complete(null);
+            } else if (res is bool) {
+              result.complete(res ? null : message);
+            } else if (res is String) {
+              result.complete(res.isEmpty ? null : res);
+            } else {
+              throw 'Only support result from service is boolean or string';
+            }
+          });
         });
         return result.future;
       },
