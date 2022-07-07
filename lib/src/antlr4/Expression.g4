@@ -3,9 +3,11 @@ grammar Expression;
 program: expression EOF;
 
 expression:
-	expression LBRACKET expression RBRACKET					# ExistExpression
+	expression LBRACKET expression? RBRACKET DOT (
+		aggregate
+		| find
+	)														# AggregateExpression
 	| expression DOT IDENTIFIER								# PropertyExpression
-	| POW DOT IDENTIFIER									# ParentPropertyExpression
 	| PLUS expression										# UnaryPlusExpression
 	| MINUS expression										# UnaryMinusExpression
 	| NOT expression										# NotExpression
@@ -20,15 +22,24 @@ expression:
 	| constant												# ConstantExpression
 	| IDENTIFIER											# IdentifierExpression;
 
+aggregate:
+	COUNT LPAREN RPAREN				# CountFunction
+	| SUM LPAREN expression RPAREN	# SumFunction
+	| AVG LPAREN expression RPAREN	# AvgFunction;
+find:
+	EXIST LPAREN RPAREN		# ExistFunction
+	| FIRST LPAREN RPAREN	# FirstFunction;
+
 constant:
-	 TRUE
+	TRUE
 	| FALSE
 	| NULL
 	| STRING_LITERAL
 	| DATE_LITERAL
 	| NUM_DOUBLE
 	| NUM_INT
-	| THIS;
+	| THIS
+	| POW;
 
 LBRACKET: '[';
 RBRACKET: ']';
@@ -53,7 +64,13 @@ DOT: '.';
 SHARP: '#';
 COLON: ':';
 DBQ: '"';
+SGQ: '\'';
 QMARK: '?';
+COUNT: 'count';
+SUM: 'sum';
+AVG: 'avg';
+EXIST: 'exist';
+FIRST: 'first';
 
 fragment DIGIT: '0' ..'9';
 fragment HEX: (DIGIT | 'A' ..'F' | 'a' ..'f');
@@ -74,9 +91,11 @@ fragment ESC:
 		| ('4' ..'9') ( ('0' ..'7'))?
 	);
 
-STRING_LITERAL: DBQ ( ~('"' | '\\') | ESC)* DBQ;
+STRING_LITERAL:
+	DBQ (~('"' | '\\') | ESC)* DBQ
+	| SGQ ( ~('\'' | '\\') | ESC)* SGQ;
 DATE_LITERAL:
-	SHARP ('0'..'9' | 'T' |'Z' | '+' |'-' |'.'|':'|' ')+ SHARP;
+	SHARP ('0' ..'9' | 'T' | 'Z' | '+' | '-' | '.' | ':' | ' ')+ SHARP;
 NUM_DOUBLE: (NUM_INT DOT DIGIT+) EXPONENT?;
 NUM_INT: DIGIT+;
 

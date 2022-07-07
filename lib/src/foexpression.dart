@@ -1,5 +1,6 @@
 import 'package:antlr4/antlr4.dart';
 import './fofield.dart';
+import './folist.dart';
 import './antlr4/ExpressionLexer.dart';
 import './antlr4/ExpressionParser.dart';
 import './antlr4/ExpressionBaseVisitor.dart';
@@ -16,10 +17,13 @@ class FOExpression {
     final tokens = CommonTokenStream(lexer);
     final parser = ExpressionParser(tokens);
     final err = _FOExpressionError();
+    parser.errorListeners.clear();
     parser.addErrorListener(err);
     final tree = parser.program();
     if (err.hasError) {
-      throw 'Invalid expression: $expr';
+      var s =
+          '${expr.substring(0, err.errorAt)}<FAILED>${expr.substring(err.errorAt)}';
+      throw 'Invalid expression: $s';
     }
     final eval = _FOExpressionVisitor(field);
     return eval.visit(tree);
@@ -28,6 +32,8 @@ class FOExpression {
 
 class _FOExpressionError extends BaseErrorListener {
   bool _hasError = false;
+  int _errorAt = 0;
+
   @override
   void syntaxError(
       Recognizer<ATNSimulator> recognizer,
@@ -37,41 +43,65 @@ class _FOExpressionError extends BaseErrorListener {
       String msg,
       RecognitionException<IntStream>? e) {
     _hasError = true;
+    _errorAt = charPositionInLine;
     super.syntaxError(
         recognizer, offendingSymbol, line, charPositionInLine, msg, e);
   }
 
   bool get hasError => _hasError;
+  int get errorAt => _errorAt;
 }
 
 class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
-  final FOField field;
+  FOField field;
+  FOField? parent;
+  List<FOField>? list;
+
+  bool _throwError = false;
+
   _FOExpressionVisitor(this.field);
+
+  dynamic rawValue(ParseTree ctx) {
+    final v = visit(ctx);
+    if (v is FOField) return v.value;
+    return v;
+  }
+
+  @override
+  visit(ParseTree tree) {
+    try {
+      return super.visit(tree);
+    } catch (ex) {
+      if (_throwError) throw ex.toString();
+      _throwError = true;
+      throw 'Can not evaluate expression: ${tree.text}\n$ex';
+    }
+  }
 
   @override
   visitProgram(ProgramContext ctx) {
-    return visit(ctx.expression()!);
+    return rawValue(ctx.expression()!);
   }
 
   @override
   visitUnaryPlusExpression(UnaryPlusExpressionContext ctx) {
-    return visit(ctx.expression()!);
+    return rawValue(ctx.expression()!);
   }
 
   @override
   visitUnaryMinusExpression(UnaryMinusExpressionContext ctx) {
-    return -visit(ctx.expression()!);
+    return -rawValue(ctx.expression()!);
   }
 
   @override
   visitNotExpression(NotExpressionContext ctx) {
-    return !visit(ctx.expression()!);
+    return !rawValue(ctx.expression()!);
   }
 
   @override
   visitMultiplicativeExpression(MultiplicativeExpressionContext ctx) {
-    final left = visit(ctx.expression(0)!);
-    final right = visit(ctx.expression(1)!);
+    final left = rawValue(ctx.expression(0)!);
+    final right = rawValue(ctx.expression(1)!);
     if (ctx.MOD() != null) return left % right;
     if (ctx.STAR() != null) return left * right;
     if (ctx.DIV() != null) return left / right;
@@ -81,8 +111,8 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
 
   @override
   visitAdditiveExpression(AdditiveExpressionContext ctx) {
-    final left = visit(ctx.expression(0)!);
-    final right = visit(ctx.expression(1)!);
+    final left = rawValue(ctx.expression(0)!);
+    final right = rawValue(ctx.expression(1)!);
     if (ctx.PLUS() != null) return left + right;
     if (ctx.MINUS() != null) return left - right;
     throw 'Not implemented ${ctx.text}';
@@ -90,8 +120,8 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
 
   @override
   visitRelationalExpression(RelationalExpressionContext ctx) {
-    final left = visit(ctx.expression(0)!);
-    final right = visit(ctx.expression(1)!);
+    final left = rawValue(ctx.expression(0)!);
+    final right = rawValue(ctx.expression(1)!);
     if (ctx.GTEQ() != null) return left >= right;
     if (ctx.GTHAN() != null) return left > right;
     if (ctx.LTEQ() != null) return left <= right;
@@ -101,8 +131,8 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
 
   @override
   visitEqualityExpression(EqualityExpressionContext ctx) {
-    final left = visit(ctx.expression(0)!);
-    final right = visit(ctx.expression(1)!);
+    final left = rawValue(ctx.expression(0)!);
+    final right = rawValue(ctx.expression(1)!);
     if (ctx.EQUALS() != null) return left == right;
     if (ctx.NOT_EQUALS() != null) return left != right;
     throw 'Not implemented ${ctx.text}';
@@ -110,17 +140,17 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
 
   @override
   visitLogicalAndExpression(LogicalAndExpressionContext ctx) {
-    return visit(ctx.expression(0)!) && visit(ctx.expression(1)!);
+    return rawValue(ctx.expression(0)!) && rawValue(ctx.expression(1)!);
   }
 
   @override
   visitLogicalOrExpression(LogicalOrExpressionContext ctx) {
-    return visit(ctx.expression(0)!) || visit(ctx.expression(1)!);
+    return rawValue(ctx.expression(0)!) || rawValue(ctx.expression(1)!);
   }
 
   @override
   visitTernaryExpression(TernaryExpressionContext ctx) {
-    var c = visit(ctx.expression(0)!);
+    var c = rawValue(ctx.expression(0)!);
     if (c) return visit(ctx.expression(1)!);
     return visit(ctx.expression(2)!);
   }
@@ -142,7 +172,7 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
     if (ctx.FALSE() != null) return false;
     if (ctx.NULL() != null) return null;
     c = ctx.STRING_LITERAL();
-    if (c != null) return c.text;
+    if (c != null) return c.text!.substring(1, c.text!.length - 1);
     c = ctx.DATE_LITERAL();
     if (c != null) {
       return DateTime.parse(c.text!.substring(1, c.text!.length - 1));
@@ -151,29 +181,106 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
     if (c != null) double.parse(c.text!);
     c = ctx.NUM_INT();
     if (c != null) return int.parse(c.text!);
-    if (ctx.THIS() != null) {
-      throw 'not implement THIS';
-    }
+    if (ctx.THIS() != null) return field;
+    if (ctx.POW() != null) return parent ?? field.parent;
     throw 'Not implemented ${ctx.text}';
   }
 
   @override
   visitIdentifierExpression(IdentifierExpressionContext ctx) {
-    throw 'Not implemented ${ctx.text}';
-  }
-
-  @override
-  visitExistExpression(ExistExpressionContext ctx) {
-    throw 'Not implemented ${ctx.text}';
+    return field[ctx.IDENTIFIER()!.text];
   }
 
   @override
   visitPropertyExpression(PropertyExpressionContext ctx) {
-    throw 'Not implemented ${ctx.text}';
+    final left = visit(ctx.expression()!);
+    if (left is! FOField) throw '"${ctx.expression()!.text}" is not field';
+    return left[ctx.IDENTIFIER()!.text];
   }
 
   @override
-  visitParentPropertyExpression(ParentPropertyExpressionContext ctx) {
-    throw 'Not implemented ${ctx.text}';
+  visitAggregateExpression(AggregateExpressionContext ctx) {
+    final lst = visit(ctx.expression(0)!);
+    if (lst is! FOList) throw '"${ctx.expression(0)!.text}" is not list';
+    //filter
+    var cond = ctx.expression(1);
+    final res = <FOField>[];
+    final oldParent = parent;
+    //parent of current list used filter
+    parent = lst.parent;
+    //quick find function, alway exist if found first valid
+    final finder = ctx.find();
+    if (cond != null) {
+      final oldField = field;
+      //do filter items
+      for (var it in lst.childs) {
+        field = it;
+        if (rawValue(cond)) {
+          res.add(it);
+          if (finder != null) break;
+        }
+      }
+      field = oldField;
+    } else {
+      res.addAll(lst.childs);
+    }
+
+    dynamic v;
+    final oldList = list;
+    list = res;
+    if (finder != null) {
+      //find function
+      v = visit(finder);
+    } else {
+      //eval aggregate, parent still available
+      v = rawValue(ctx.aggregate()!);
+    }
+    list = oldList;
+    //reset parent
+    parent = oldParent;
+    return v;
+  }
+
+  @override
+  visitCountFunction(CountFunctionContext ctx) {
+    return list!.length;
+  }
+
+  @override
+  visitSumFunction(SumFunctionContext ctx) {
+    //using parent in AggregateExpressionContext
+    final oldField = field;
+    var total = 0.0;
+    for (var it in list!) {
+      field = it;
+      total += rawValue(ctx.expression()!);
+    }
+    field = oldField;
+    return total;
+  }
+
+  @override
+  visitAvgFunction(AvgFunctionContext ctx) {
+    //using parent in AggregateExpressionContext
+    final oldField = field;
+    var total = 0.0;
+    int c = 0;
+    for (var it in list!) {
+      field = it;
+      total += rawValue(ctx.expression()!);
+      c++;
+    }
+    field = oldField;
+    return c != 0 ? total / c : 0;
+  }
+
+  @override
+  visitExistFunction(ExistFunctionContext ctx) {
+    return list!.isNotEmpty;
+  }
+
+  @override
+  visitFirstFunction(FirstFunctionContext ctx) {
+    return list!.isNotEmpty ? list![0] : null;
   }
 }

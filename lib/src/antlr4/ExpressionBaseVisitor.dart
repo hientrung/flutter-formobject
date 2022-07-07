@@ -1,4 +1,4 @@
-// Generated from D:\GitHub\flutter-formobject\lib\src\antlr4\Expression.g4 by ANTLR 4.10.1
+// Generated from F:\Trung\MyGit\formobject\lib\src\antlr4\Expression.g4 by ANTLR 4.10.1
 // ignore_for_file: unused_import, unused_local_variable, prefer_single_quotes
 import 'package:antlr4/antlr4.dart';
 
@@ -51,11 +51,11 @@ class ExpressionBaseVisitor<T> extends ParseTreeVisitor<T> implements Expression
   /// The default implementation returns the result of calling
   /// [visitChildren] on [ctx].
   @override
-  T? visitIdentifierExpression(IdentifierExpressionContext ctx) => visitChildren(ctx);
+  T? visitAggregateExpression(AggregateExpressionContext ctx) => visitChildren(ctx);
   /// The default implementation returns the result of calling
   /// [visitChildren] on [ctx].
   @override
-  T? visitParentPropertyExpression(ParentPropertyExpressionContext ctx) => visitChildren(ctx);
+  T? visitIdentifierExpression(IdentifierExpressionContext ctx) => visitChildren(ctx);
   /// The default implementation returns the result of calling
   /// [visitChildren] on [ctx].
   @override
@@ -75,11 +75,27 @@ class ExpressionBaseVisitor<T> extends ParseTreeVisitor<T> implements Expression
   /// The default implementation returns the result of calling
   /// [visitChildren] on [ctx].
   @override
-  T? visitExistExpression(ExistExpressionContext ctx) => visitChildren(ctx);
+  T? visitMultiplicativeExpression(MultiplicativeExpressionContext ctx) => visitChildren(ctx);
   /// The default implementation returns the result of calling
   /// [visitChildren] on [ctx].
   @override
-  T? visitMultiplicativeExpression(MultiplicativeExpressionContext ctx) => visitChildren(ctx);
+  T? visitCountFunction(CountFunctionContext ctx) => visitChildren(ctx);
+  /// The default implementation returns the result of calling
+  /// [visitChildren] on [ctx].
+  @override
+  T? visitSumFunction(SumFunctionContext ctx) => visitChildren(ctx);
+  /// The default implementation returns the result of calling
+  /// [visitChildren] on [ctx].
+  @override
+  T? visitAvgFunction(AvgFunctionContext ctx) => visitChildren(ctx);
+  /// The default implementation returns the result of calling
+  /// [visitChildren] on [ctx].
+  @override
+  T? visitExistFunction(ExistFunctionContext ctx) => visitChildren(ctx);
+  /// The default implementation returns the result of calling
+  /// [visitChildren] on [ctx].
+  @override
+  T? visitFirstFunction(FirstFunctionContext ctx) => visitChildren(ctx);
   /// The default implementation returns the result of calling
   /// [visitChildren] on [ctx].
   @override

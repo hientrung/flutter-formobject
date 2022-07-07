@@ -1,4 +1,4 @@
-// Generated from D:\GitHub\flutter-formobject\lib\src\antlr4\Expression.g4 by ANTLR 4.10.1
+// Generated from F:\Trung\MyGit\formobject\lib\src\antlr4\Expression.g4 by ANTLR 4.10.1
 // ignore_for_file: unused_import, unused_local_variable, prefer_single_quotes
 import 'package:antlr4/antlr4.dart';
 
@@ -63,17 +63,17 @@ abstract class ExpressionVisitor<T> extends ParseTreeVisitor<T> {
   /// Return the visitor result.
   T? visitNotExpression(NotExpressionContext ctx);
 
+  /// Visit a parse tree produced by the {@code AggregateExpression}
+  /// labeled alternative in {@link ExpressionParser#expression}.
+  /// [ctx] the parse tree.
+  /// Return the visitor result.
+  T? visitAggregateExpression(AggregateExpressionContext ctx);
+
   /// Visit a parse tree produced by the {@code IdentifierExpression}
   /// labeled alternative in {@link ExpressionParser#expression}.
   /// [ctx] the parse tree.
   /// Return the visitor result.
   T? visitIdentifierExpression(IdentifierExpressionContext ctx);
-
-  /// Visit a parse tree produced by the {@code ParentPropertyExpression}
-  /// labeled alternative in {@link ExpressionParser#expression}.
-  /// [ctx] the parse tree.
-  /// Return the visitor result.
-  T? visitParentPropertyExpression(ParentPropertyExpressionContext ctx);
 
   /// Visit a parse tree produced by the {@code UnaryMinusExpression}
   /// labeled alternative in {@link ExpressionParser#expression}.
@@ -99,17 +99,41 @@ abstract class ExpressionVisitor<T> extends ParseTreeVisitor<T> {
   /// Return the visitor result.
   T? visitEqualityExpression(EqualityExpressionContext ctx);
 
-  /// Visit a parse tree produced by the {@code ExistExpression}
-  /// labeled alternative in {@link ExpressionParser#expression}.
-  /// [ctx] the parse tree.
-  /// Return the visitor result.
-  T? visitExistExpression(ExistExpressionContext ctx);
-
   /// Visit a parse tree produced by the {@code MultiplicativeExpression}
   /// labeled alternative in {@link ExpressionParser#expression}.
   /// [ctx] the parse tree.
   /// Return the visitor result.
   T? visitMultiplicativeExpression(MultiplicativeExpressionContext ctx);
+
+  /// Visit a parse tree produced by the {@code CountFunction}
+  /// labeled alternative in {@link ExpressionParser#aggregate}.
+  /// [ctx] the parse tree.
+  /// Return the visitor result.
+  T? visitCountFunction(CountFunctionContext ctx);
+
+  /// Visit a parse tree produced by the {@code SumFunction}
+  /// labeled alternative in {@link ExpressionParser#aggregate}.
+  /// [ctx] the parse tree.
+  /// Return the visitor result.
+  T? visitSumFunction(SumFunctionContext ctx);
+
+  /// Visit a parse tree produced by the {@code AvgFunction}
+  /// labeled alternative in {@link ExpressionParser#aggregate}.
+  /// [ctx] the parse tree.
+  /// Return the visitor result.
+  T? visitAvgFunction(AvgFunctionContext ctx);
+
+  /// Visit a parse tree produced by the {@code ExistFunction}
+  /// labeled alternative in {@link ExpressionParser#find}.
+  /// [ctx] the parse tree.
+  /// Return the visitor result.
+  T? visitExistFunction(ExistFunctionContext ctx);
+
+  /// Visit a parse tree produced by the {@code FirstFunction}
+  /// labeled alternative in {@link ExpressionParser#find}.
+  /// [ctx] the parse tree.
+  /// Return the visitor result.
+  T? visitFirstFunction(FirstFunctionContext ctx);
 
   /// Visit a parse tree produced by [ExpressionParser.constant].
   /// [ctx] the parse tree.
