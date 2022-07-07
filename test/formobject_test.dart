@@ -266,4 +266,76 @@ void main() {
     f[1][2]['name'].value = 'ASDF';
     expect(f.isValid, true);
   });
+
+  test('Validate equal', () {
+    final f = FOForm({
+      'data': {
+        'password': 'asdf',
+        'confirm': null,
+      },
+      'meta': {
+        ':root': {
+          'type': 'object',
+          'objectType': 'Root',
+        },
+        'Root': {
+          'password': {'type': 'string'},
+          'confirm': {
+            'type': 'string',
+            'rules': [
+              {'type': 'required', 'message': 'Required'},
+              {
+                'type': 'equal',
+                'message': 'Not match',
+                'expression': '^.password'
+              }
+            ]
+          }
+        }
+      }
+    });
+    expect(f.isValid, false);
+    f['confirm'].value = 'test';
+    expect(f.isValid, false);
+    f['confirm'].value = 'asdf';
+    expect(f.isValid, true);
+  });
+
+  test('Validate expression', () {
+    final f = FOForm({
+      'data': {
+        'password': 'asdf',
+        'confirm': null,
+      },
+      'meta': {
+        ':root': {
+          'type': 'object',
+          'objectType': 'Root',
+          'rules': [
+            {
+              'type': 'expression',
+              'message': 'invalid',
+              'expression': 'password == confirm'
+            }
+          ]
+        },
+        'Root': {
+          'password': {'type': 'string'},
+          'confirm': {
+            'type': 'string',
+            'rules': [
+              {'type': 'required', 'message': 'Required'},
+            ]
+          }
+        }
+      }
+    });
+    expect(f.isValid, false);
+    expect(f.error, 'invalid; Required');
+    f['confirm'].value = 'test';
+    expect(f.isValid, false);
+    expect(f.error, 'invalid');
+    f['confirm'].value = 'asdf';
+    expect(f.isValid, true);
+  });
 }
