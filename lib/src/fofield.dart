@@ -23,9 +23,9 @@ enum FOValidStatus {
 
 typedef FOChangedHandler<T> = void Function(T value);
 
-class FOSubscription {
-  final List<FOSubscription> _sources;
-  final FOChangedHandler handler;
+class FOSubscription<T> {
+  final List<FOSubscription<T>> _sources;
+  final FOChangedHandler<T> handler;
   FOSubscription(this._sources, this.handler) {
     _sources.add(this);
   }
@@ -37,11 +37,11 @@ abstract class FOField {
   final FOFieldType type;
   final Map<String, dynamic> meta;
   final subscriptions = <FOSubscription>[];
+  final statusSubscriptions = <FOSubscription<FOValidStatus>>[];
   final depends = <FOField>[];
   late final FOValidator? validator;
   final FOField? parent;
   FOValidStatus _status = FOValidStatus.pending;
-  bool _notifying = false;
   String _fullName = '';
   String? _error;
   final _subDepends = <String, FOSubscription>{};
@@ -75,14 +75,22 @@ abstract class FOField {
   FOSubscription onChanged(FOChangedHandler handler) =>
       FOSubscription(subscriptions, handler);
 
+  FOSubscription<FOValidStatus> onStatusChanged(
+          FOChangedHandler<FOValidStatus> handler) =>
+      FOSubscription<FOValidStatus>(statusSubscriptions, handler);
+
   void notify() {
     if (subscriptions.isEmpty) return;
-    _notifying = true;
     final val = value;
     for (var it in subscriptions) {
       it.handler(val);
     }
-    _notifying = false;
+  }
+
+  void notifyStatus() {
+    for (var it in statusSubscriptions) {
+      it.handler(_status);
+    }
   }
 
   ///Get current value of field
@@ -100,7 +108,7 @@ abstract class FOField {
 
   void _doValidate() {
     final vd = validator!;
-    final old = _status;
+    final isValidating = _status == FOValidStatus.validating;
     _validating?.ignore();
     _status = FOValidStatus.validating;
 
@@ -121,17 +129,16 @@ abstract class FOField {
         _error = res;
       }
       _status = res == null ? FOValidStatus.valid : FOValidStatus.invalid;
-      if (!_notifying &&
-          ((old == FOValidStatus.pending && _status == FOValidStatus.invalid) ||
-              (old != FOValidStatus.pending && old != _status))) {
-        notify();
-      }
       _validating = null;
     }
 
     if (res != null && res is Future<String?>) {
       _validating = res;
-      res.then((val) => completed(val));
+      if (!isValidating) notifyStatus();
+      res.then((val) {
+        completed(val);
+        notifyStatus();
+      });
     } else {
       completed(res as String?);
     }
@@ -203,6 +210,7 @@ abstract class FOField {
 
   void dispose() {
     subscriptions.clear();
+    statusSubscriptions.clear();
     for (var it in _subDepends.values) {
       it.dispose();
     }

@@ -115,6 +115,10 @@ class FOForm {
   FOSubscription onChanged(FOChangedHandler handler) =>
       _root.onChanged(handler);
 
+  FOSubscription<FOValidStatus> onStatusChanged(
+          FOChangedHandler<FOValidStatus> handler) =>
+      _root.onStatusChanged(handler);
+
   dynamic get value => _root.value;
 
   set value(dynamic val) => _root.value = val;
