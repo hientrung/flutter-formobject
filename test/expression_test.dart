@@ -76,4 +76,34 @@ void main() {
         true,
         reason: '7');
   });
+
+  test('Nested list expression', () {
+    var f = FOForm({
+      'data': [
+        [
+          {'value': 1},
+          {'value': 2},
+        ],
+        [
+          {'value': 3},
+          {'value': 4},
+        ],
+      ],
+      'meta': {
+        ':root': {
+          'type': 'list',
+          'itemType': {
+            'type': 'list',
+            'itemType': {'type': 'object', 'objectType': 'Item'}
+          },
+        },
+        'Item': {
+          'value': {'type': 'int'}
+        }
+      }
+    });
+    expect(f.eval('this[].sum(this[].sum(value))'), 10);
+    expect(f.eval('this[this[value>10].exist()].exist()'), false);
+    expect(f.eval('this[this[value<3].exist()].sum(this[].sum(value))'), 3);
+  });
 }
