@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import './fofield.dart';
+import './foobject.dart';
 
 typedef FOValidateHandler = FutureOr<String?> Function(dynamic value);
 
@@ -87,6 +88,16 @@ class FOValidator {
                 it['condition'],
                 it['expression'],
               ));
+              break;
+            case 'service':
+              res.add(FOValidator.service(
+                  field,
+                  it['message'],
+                  it['condition'],
+                  it['url'],
+                  it['fieldNames'] ?? <String>[],
+                  it['debounce'] ?? 1,
+                  it['expected']));
               break;
             default:
               throw 'Not supported rule type "$type"';
@@ -241,6 +252,38 @@ class FOValidator {
             (r is num && r == 0) ||
             (r is bool && !r)) return message;
         return null;
+      },
+      condition,
+    );
+  }
+
+  factory FOValidator.service(FOField field, String message, String? condition,
+      String url, List<String> fieldNames, int debounce, String? expected) {
+    Timer? timer;
+    return FOValidator(
+      field,
+      (value) {
+        if (timer != null) timer!.cancel();
+        final result = Completer<String?>();
+        timer = Timer(Duration(seconds: debounce), () {
+          //get data fields;
+          final data = <String, dynamic>{};
+          if (fieldNames.isNotEmpty) {
+            FOField? cur = field;
+            while (cur is! FOObject && cur != null) {
+              cur = cur.parent;
+            }
+            if (cur == null) {
+              throw 'Not found object field to get value of "fieldNames"';
+            }
+            for (var f in fieldNames) {
+              data[f] = cur.eval(f);
+            }
+          }
+          //post to service
+          throw 'TODO:';
+        });
+        return result.future;
       },
       condition,
     );

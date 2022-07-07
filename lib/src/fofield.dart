@@ -45,6 +45,7 @@ abstract class FOField {
   String _fullName = '';
   String? _error;
   final _subDepends = <String, FOSubscription>{};
+  Future<String?>? _validating;
 
   FOField({
     this.parent,
@@ -100,11 +101,12 @@ abstract class FOField {
   void _doValidate() {
     final vd = validator!;
     final old = _status;
+    _validating?.ignore();
     _status = FOValidStatus.validating;
 
     //run in validate context to get depends
     final newDepends = <FOField>[];
-    final s = runZonedGuarded<FutureOr<String?>>(
+    final res = runZonedGuarded<FutureOr<String?>>(
         () => vd.validate(value), (error, stack) => throw error.toString(),
         zoneValues: {
           'FOFieldDepends': newDepends,
@@ -124,12 +126,14 @@ abstract class FOField {
               (old != FOValidStatus.pending && old != _status))) {
         notify();
       }
+      _validating = null;
     }
 
-    if (s != null && s is Future<String?>) {
-      s.then((val) => completed(val));
+    if (res != null && res is Future<String?>) {
+      _validating = res;
+      res.then((val) => completed(val));
     } else {
-      completed(s as String?);
+      completed(res as String?);
     }
   }
 

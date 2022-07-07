@@ -139,6 +139,7 @@ void main() {
     f['name'].value = null;
     expect(f.error, 'name should required');
     f.dispose();
+    FOField.customError = null;
   });
 
   test('Check object errors', () {
@@ -162,9 +163,9 @@ void main() {
         }
       }
     });
-    FOField.customError = null;
     FOField.customErrors = (errors) => errors.join('<br/>');
     expect(f.error, 'Name required<br/>required');
+    FOField.customErrors = null;
   });
 
   test('Check list int', () {
