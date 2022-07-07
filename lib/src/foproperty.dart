@@ -13,7 +13,10 @@ class FOProperty<T> extends FOField {
   }) : _value = initValue;
 
   @override
-  T get value => _value;
+  T get value {
+    super.value;
+    return _value;
+  }
 
   @override
   set value(val) {

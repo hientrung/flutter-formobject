@@ -1,8 +1,7 @@
-import 'package:formobject/src/folist.dart';
-import 'package:formobject/src/foobject.dart';
-
 import './fofield.dart';
 import './foproperty.dart';
+import './foobject.dart';
+import './folist.dart';
 
 class FOForm {
   final Map<String, dynamic> json;
@@ -146,7 +145,5 @@ class FOForm {
     (_root as FOObject).add(name, field);
   }
 
-  void dispose() {
-    _root.dispose();
-  }
+  void dispose() => _root.dispose();
 }

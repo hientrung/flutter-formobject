@@ -39,7 +39,10 @@ class FOList extends FOField {
   }
 
   @override
-  List<dynamic> get value => _items.map((e) => e.value).toList();
+  List<dynamic> get value {
+    super.value;
+    return _items.map((e) => e.value).toList();
+  }
 
   @override
   set value(val) {
@@ -100,7 +103,13 @@ class FOList extends FOField {
 
   @override
   void dispose() {
+    for (var it in _items) {
+      it.dispose();
+    }
     _items.clear();
+    for (var it in _subs.values) {
+      it.dispose();
+    }
     _subs.clear();
     super.dispose();
   }

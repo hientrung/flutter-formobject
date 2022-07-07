@@ -26,8 +26,10 @@ class FOObject extends FOField {
   }
 
   @override
-  Map<String, dynamic> get value =>
-      _items.map((key, value) => MapEntry(key, value.value));
+  Map<String, dynamic> get value {
+    super.value;
+    return _items.map((key, value) => MapEntry(key, value.value));
+  }
 
   @override
   set value(val) {
@@ -106,7 +108,13 @@ class FOObject extends FOField {
 
   @override
   void dispose() {
+    for (var it in _items.values) {
+      it.dispose();
+    }
     _items.clear();
+    for (var it in _subs.values) {
+      it.dispose();
+    }
     _subs.clear();
     super.dispose();
   }

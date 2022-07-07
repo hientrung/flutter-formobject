@@ -338,4 +338,37 @@ void main() {
     f['confirm'].value = 'asdf';
     expect(f.isValid, true);
   });
+
+  test('Validate with condition', () {
+    final f = FOForm({
+      'data': {
+        'type': 1,
+        'desc': '',
+      },
+      'meta': {
+        ':root': {
+          'type': 'object',
+          'objectType': 'Root',
+        },
+        'Root': {
+          'type': {'type': 'int'},
+          'desc': {
+            'type': 'string',
+            'rules': [
+              {
+                'type': 'required',
+                'message': 'Required',
+                'condition': '^.type == 3'
+              }
+            ]
+          }
+        }
+      }
+    });
+    expect(f.isValid, true);
+    f['type'].value = 3;
+    expect(f.isValid, false);
+    f['desc'].value = 'asdf';
+    expect(f.isValid, true);
+  });
 }
