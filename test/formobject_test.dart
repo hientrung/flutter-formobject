@@ -181,7 +181,7 @@ void main() {
       }
     });
     expect(f.isValid, false);
-    f.getRoot<FOList>().add(4);
+    f.addItem(4);
     expect(f.isValid, true);
   });
 

@@ -136,7 +136,15 @@ class FOForm {
 
   dynamic eval(String expression) => _root.eval(expression);
 
-  T getRoot<T extends FOField>() => _root as T;
+  FOField addItem(dynamic data) {
+    if (_root is! FOList) throw 'Form data is not list field';
+    return (_root as FOList).add(data);
+  }
+
+  void addProperty(String name, FOField field) {
+    if (_root is! FOObject) throw 'Form data is not object fielld';
+    (_root as FOObject).add(name, field);
+  }
 
   void dispose() {
     _root.dispose();

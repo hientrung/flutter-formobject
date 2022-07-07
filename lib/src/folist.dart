@@ -105,13 +105,14 @@ class FOList extends FOField {
     super.dispose();
   }
 
-  void add(dynamic data) {
+  FOField add(dynamic data) {
     var field = creator(this, data);
     _items.add(field);
     if (subscriptions.isNotEmpty) {
       _subs[field.hashCode] = _listenChild(field);
     }
     notify();
+    return field;
   }
 
   void remove(FOField field) {
