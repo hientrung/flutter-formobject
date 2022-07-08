@@ -145,9 +145,9 @@ class FOForm {
 
   bool get hasChange => _root.hasChange;
 
-  Iterable<FOField> get childs => _root.childs;
+  Iterable<FOField> get childs => _root.hasChild ? _root.childs : [_root];
 
-  FOField operator [](dynamic index) => _root[index];
+  FOField operator [](dynamic index) => _root.hasChild ? _root[index] : _root;
 
   String? get error => _root.error;
 

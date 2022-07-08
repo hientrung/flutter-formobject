@@ -191,6 +191,8 @@ abstract class FOField {
     return _error;
   }
 
+  bool get hasChild => false;
+
   FOField operator [](dynamic index) =>
       throw '"$fullName" is not support childs field';
 

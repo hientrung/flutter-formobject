@@ -59,6 +59,9 @@ class FOObject extends FOField {
   bool get isValid => super.isValid && _items.values.every((it) => it.isValid);
 
   @override
+  bool get hasChild => true;
+
+  @override
   Iterable<FOField> get childs => _items.values;
 
   @override
