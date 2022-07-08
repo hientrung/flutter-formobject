@@ -106,14 +106,13 @@ abstract class FOField {
   bool get hasChange;
 
   void _doValidate() {
-    final vd = validator!;
-    final isValidating = _status == FOValidStatus.validating;
+    final oldStatus = _status;
     _validating?.ignore();
     _status = FOValidStatus.validating;
 
     late FutureOr<String?> res;
     final newDepends = contextDepends(() {
-      res = vd.validate(value);
+      res = validator!.validate(value);
     });
     _updateDepends(newDepends);
 
@@ -129,13 +128,18 @@ abstract class FOField {
 
     if (res is Future<String?>) {
       _validating = res as Future<String?>;
-      if (!isValidating) notifyStatus();
+      if (oldStatus != FOValidStatus.validating) notifyStatus();
       _validating!.then((val) {
         completed(val);
         notifyStatus();
       });
     } else {
       completed(res as String?);
+      if ((oldStatus == FOValidStatus.pending &&
+              _status == FOValidStatus.invalid) ||
+          (oldStatus != FOValidStatus.pending && _status != oldStatus)) {
+        notifyStatus();
+      }
     }
   }
 
