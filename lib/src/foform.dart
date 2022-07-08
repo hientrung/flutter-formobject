@@ -2,6 +2,7 @@ import './fofield.dart';
 import './foproperty.dart';
 import './foobject.dart';
 import './folist.dart';
+import './foexpression.dart';
 
 class FOForm {
   final Map<String, dynamic> json;
@@ -100,6 +101,19 @@ class FOForm {
             initValue: data ?? [],
             creator: (lst, val) =>
                 _createField(lst, 'list-item', val, itemType),
+          );
+        case 'expression':
+          if (parent == null) {
+            throw 'Field expression need parent field used to calcuate base on other fields';
+          }
+          if (meta['expression'] == null) {
+            throw 'Not found key "expression"';
+          }
+          return FOExpression(
+            parent: parent,
+            name: name,
+            meta: meta,
+            expression: meta['expression'],
           );
         default:
           throw 'Not support type: $type';

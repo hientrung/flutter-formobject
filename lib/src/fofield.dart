@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import './foexpression.dart';
+import 'expression.dart';
 import './fovalidator.dart';
 
 enum FOFieldType {
@@ -38,13 +38,12 @@ abstract class FOField {
   final Map<String, dynamic> meta;
   final subscriptions = <FOSubscription>[];
   final statusSubscriptions = <FOSubscription<FOValidStatus>>[];
-  final depends = <FOField>[];
   late final FOValidator? validator;
   final FOField? parent;
   FOValidStatus _status = FOValidStatus.pending;
   String _fullName = '';
   String? _error;
-  final _subDepends = <String, FOSubscription>{};
+  final _depends = <FOField, FOSubscription>{};
   Future<String?>? _validating;
 
   FOField({
@@ -112,14 +111,10 @@ abstract class FOField {
     _validating?.ignore();
     _status = FOValidStatus.validating;
 
-    //run in validate context to get depends
-    final newDepends = <FOField>[];
-    final res = runZonedGuarded<FutureOr<String?>>(
-        () => vd.validate(value), (error, stack) => throw error.toString(),
-        zoneValues: {
-          'FOFieldDepends': newDepends,
-          'FOFieldCaller': this,
-        });
+    late FutureOr<String?> res;
+    final newDepends = contextDepends(() {
+      res = vd.validate(value);
+    });
     _updateDepends(newDepends);
 
     void completed(String? res) {
@@ -132,10 +127,10 @@ abstract class FOField {
       _validating = null;
     }
 
-    if (res != null && res is Future<String?>) {
-      _validating = res;
+    if (res is Future<String?>) {
+      _validating = res as Future<String?>;
       if (!isValidating) notifyStatus();
-      res.then((val) {
+      _validating!.then((val) {
         completed(val);
         notifyStatus();
       });
@@ -145,24 +140,21 @@ abstract class FOField {
   }
 
   void _updateDepends(List<FOField> newDepends) {
-    //remove subscription
-    for (var it in depends) {
-      if (!newDepends.contains(it)) {
-        _subDepends[it.fullName]!.dispose();
-        _subDepends.remove(it.fullName);
-      }
+    //remove old
+    final removed =
+        _depends.entries.where((it) => !newDepends.contains(it.key)).toList();
+    for (var it in removed) {
+      it.value.dispose();
+      _depends.remove(it.key);
     }
     //add new subscription
     for (var it in newDepends) {
-      if (!depends.contains(it)) {
-        _subDepends[it.fullName] = it.onChanged((_) {
+      if (!_depends.containsKey(it)) {
+        _depends[it] = it.onChanged((_) {
           _doValidate();
         });
       }
     }
-    //update list
-    depends.clear();
-    depends.addAll(newDepends);
   }
 
   void _addDepend() {
@@ -184,6 +176,8 @@ abstract class FOField {
     return isValid;
   }
 
+  Iterable<FOField> get depends => _depends.keys;
+
   bool get isValid => _status == FOValidStatus.pending
       ? validate()
       : _status == FOValidStatus.valid;
@@ -204,18 +198,30 @@ abstract class FOField {
       throw '"$fullName" is not support childs field';
 
   dynamic eval(String expression) {
-    final expr = FOExpression(this);
-    return expr.eval(expression);
+    return evaluate(this, expression);
+  }
+
+  ///Run in zone context to get depends
+  List<FOField> contextDepends(void Function() run) {
+    final List<FOField> lst = [];
+    runZonedGuarded(
+      run,
+      (error, stack) => throw error.toString(),
+      zoneValues: {
+        'FOFieldDepends': lst,
+        'FOFieldCaller': this,
+      },
+    );
+    return lst;
   }
 
   void dispose() {
     subscriptions.clear();
     statusSubscriptions.clear();
-    for (var it in _subDepends.values) {
+    for (var it in _depends.values) {
       it.dispose();
     }
-    _subDepends.clear();
-    depends.clear();
+    _depends.clear();
   }
 
   static String Function(FOField field, String error)? customError;

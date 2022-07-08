@@ -403,4 +403,30 @@ void main() {
     await Future.delayed(const Duration(milliseconds: 100));
     FOValidator.requestHandler = null;
   });
+
+  test('Check field expression', () async {
+    final f = FOForm({
+      'data': {'price': 1, 'amount': 20},
+      'meta': {
+        ':root': {
+          'type': 'object',
+          'objectType': 'Root',
+        },
+        'Root': {
+          'price': {'type': 'int'},
+          'amount': {'type': 'int'},
+          'total': {'type': 'expression', 'expression': 'price*amount'}
+        }
+      }
+    });
+    expect(f['total'].value, 20, reason: 'manual update');
+    bool auto = false;
+    f['total'].onChanged((value) {
+      expect(value, 40, reason: 'auto update');
+      auto = true;
+    });
+    f['price'].value = 2;
+    await Future.delayed(const Duration(milliseconds: 100));
+    expect(auto, true);
+  });
 }
