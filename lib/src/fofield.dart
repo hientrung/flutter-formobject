@@ -58,7 +58,7 @@ abstract class FOField {
       onChanged((_) {
         _doValidate();
       });
-    } else {
+    } else if (!hasChild) {
       _status = FOValidStatus.valid;
     }
     //combine full name
@@ -107,6 +107,7 @@ abstract class FOField {
 
   void _doValidate() {
     final oldStatus = _status;
+    final oldError = _error;
     _validating?.ignore();
     _status = FOValidStatus.validating;
 
@@ -135,9 +136,7 @@ abstract class FOField {
       });
     } else {
       completed(res as String?);
-      if ((oldStatus == FOValidStatus.pending &&
-              _status == FOValidStatus.invalid) ||
-          (oldStatus != FOValidStatus.pending && _status != oldStatus)) {
+      if (_status != oldStatus || _error != oldError) {
         notifyStatus();
       }
     }
@@ -176,15 +175,25 @@ abstract class FOField {
   bool validate() {
     if (_status == FOValidStatus.pending && validator != null) {
       _doValidate();
+    } else if (_status == FOValidStatus.pending) {
+      _status = FOValidStatus.valid;
+    }
+    if (hasChild) {
+      for (var it in childs) {
+        it.validate();
+      }
     }
     return isValid;
   }
 
   Iterable<FOField> get depends => _depends.keys;
 
-  bool get isValid => _status == FOValidStatus.pending
-      ? validate()
-      : _status == FOValidStatus.valid;
+  bool get isValid {
+    if (_status == FOValidStatus.pending) validate();
+    if (!hasChild) return _status == FOValidStatus.valid;
+    if (_status != FOValidStatus.valid) return false;
+    return childs.every((it) => it.isValid);
+  }
 
   FOValidStatus get status => _status;
 

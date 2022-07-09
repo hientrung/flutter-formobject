@@ -186,6 +186,30 @@ void main() {
     expect(f.isValid, true);
   });
 
+  test('Validate list', () {
+    final f = FOForm({
+      'data': [
+        {'name': ''},
+      ],
+      'meta': {
+        ':root': {
+          'type': 'list',
+          'itemType': {'type': 'object', 'objectType': 'Item'}
+        },
+        'Item': {
+          'name': {
+            'type': 'string',
+            'rules': [
+              {'type': 'required', 'message': 'Required'},
+            ]
+          },
+        }
+      }
+    });
+    expect(f[0]['name'].isValid, false);
+    expect(f[0].isValid, false);
+    expect(f.isValid, false);
+  });
   test('Check list object', () {
     var f = FOForm({
       'data': {

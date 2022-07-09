@@ -58,9 +58,6 @@ class FOList extends FOField {
   }
 
   @override
-  bool get isValid => super.isValid && _items.every((it) => it.isValid);
-
-  @override
   bool get hasChild => true;
 
   @override
