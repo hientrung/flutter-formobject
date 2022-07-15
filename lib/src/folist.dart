@@ -4,7 +4,6 @@ class FOList extends FOField {
   final List<dynamic> initValue;
   final FOField Function(FOList list, dynamic data) creator;
   final _items = <FOField>[];
-  final _subs = <int, FOSubscription>{};
 
   FOList({
     super.parent,
@@ -19,16 +18,7 @@ class FOList extends FOField {
   void _reset(List<dynamic> values) {
     var old = value.toString();
     _items.clear();
-    for (var it in _subs.values) {
-      it.dispose();
-    }
-    _subs.clear();
     _items.addAll(values.map((it) => creator(this, it)));
-    if (subscriptions.isNotEmpty) {
-      for (var it in _items) {
-        _subs[it.hashCode] = _listenChild(it);
-      }
-    }
     var s = value.toString();
     if (old != s) notify();
   }
@@ -73,22 +63,6 @@ class FOList extends FOField {
   }
 
   @override
-  FOSubscription onChanged(FOChangedHandler handler) {
-    if (subscriptions.isEmpty) {
-      for (var it in _items) {
-        _subs[it.hashCode] = _listenChild(it);
-      }
-    }
-    return super.onChanged(handler);
-  }
-
-  FOSubscription _listenChild(FOField field) {
-    return field.onChanged((_) {
-      notify();
-    });
-  }
-
-  @override
   String? get error {
     var errs = <String>[];
     var e = super.error;
@@ -108,10 +82,6 @@ class FOList extends FOField {
       it.dispose();
     }
     _items.clear();
-    for (var it in _subs.values) {
-      it.dispose();
-    }
-    _subs.clear();
     super.dispose();
   }
 
@@ -123,17 +93,12 @@ class FOList extends FOField {
   FOField add(dynamic data) {
     var field = creator(this, data);
     _items.add(field);
-    if (subscriptions.isNotEmpty) {
-      _subs[field.hashCode] = _listenChild(field);
-    }
     notify();
     return field;
   }
 
   void remove(FOField field) {
     _items.remove(field);
-    _subs[field.hashCode]?.dispose();
-    _subs.remove(field.hashCode);
     notify();
   }
 }
