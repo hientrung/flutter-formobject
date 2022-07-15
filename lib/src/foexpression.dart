@@ -29,9 +29,6 @@ class FOExpression extends FOField {
   }
 
   @override
-  void reset() {}
-
-  @override
   bool get hasChange => value != initValue;
 
   void _update() {
