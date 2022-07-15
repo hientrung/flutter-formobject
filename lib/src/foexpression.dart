@@ -77,4 +77,10 @@ class FOExpression extends FOField {
     _valueDepends.clear();
     super.dispose();
   }
+
+  @override
+  toJson() {
+    if (value is DateTime) return (value as DateTime).toIso8601String();
+    return value;
+  }
 }

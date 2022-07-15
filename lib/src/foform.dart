@@ -166,4 +166,6 @@ class FOForm {
   }
 
   void dispose() => _root.dispose();
+
+  toJson() => _root.toJson();
 }

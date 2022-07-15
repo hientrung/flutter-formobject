@@ -35,4 +35,10 @@ class FOProperty<T> extends FOField {
 
   @override
   bool get hasChange => value != initValue;
+
+  @override
+  toJson() {
+    if (value is DateTime) return (value as DateTime).toIso8601String();
+    return value;
+  }
 }

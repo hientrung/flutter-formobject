@@ -115,6 +115,11 @@ class FOList extends FOField {
     super.dispose();
   }
 
+  @override
+  toJson() {
+    return _items.map((e) => e.toJson());
+  }
+
   FOField add(dynamic data) {
     var field = creator(this, data);
     _items.add(field);

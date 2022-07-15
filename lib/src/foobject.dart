@@ -120,6 +120,11 @@ class FOObject extends FOField {
     super.dispose();
   }
 
+  @override
+  toJson() {
+    return _items.map((key, value) => MapEntry(key, value.toJson()));
+  }
+
   void add(String name, FOField field) {
     if (_items.containsKey(name)) throw '$name already exist';
     _items[name] = field;

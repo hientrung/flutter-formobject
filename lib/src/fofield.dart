@@ -244,6 +244,8 @@ abstract class FOField {
     _depends.clear();
   }
 
+  dynamic toJson();
+
   static String Function(FOField field, String error)? customError;
   static String Function(List<String> errors)? customErrors;
 }
