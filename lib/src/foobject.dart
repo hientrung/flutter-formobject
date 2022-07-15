@@ -131,13 +131,11 @@ class FOObject extends FOField {
     if (subscriptions.isNotEmpty) {
       _subs[name] = _listenChild(field);
     }
-    notify();
   }
 
   void remove(String name) {
     _items.remove(name);
     _subs[name]?.dispose();
     _subs.remove(name);
-    notify();
   }
 }
