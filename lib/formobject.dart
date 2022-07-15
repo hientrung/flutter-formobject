@@ -7,3 +7,4 @@ export './src/foobject.dart';
 export './src/folist.dart';
 export './src/foexpression.dart';
 export './src/foform.dart';
+export './src/foeditor.dart';
