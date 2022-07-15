@@ -87,7 +87,7 @@ class FOList extends FOField {
 
   @override
   toJson() {
-    return _items.map((e) => e.toJson());
+    return _items.map((e) => e.toJson()).toList();
   }
 
   FOField add(dynamic data) {
