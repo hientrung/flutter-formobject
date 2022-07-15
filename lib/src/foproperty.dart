@@ -28,7 +28,10 @@ class FOProperty<T> extends FOField {
   }
 
   @override
-  void reset() => value = initValue;
+  void reset() {
+    value = initValue;
+    super.reset();
+  }
 
   @override
   bool get hasChange => value != initValue;

@@ -36,6 +36,7 @@ class FOList extends FOField {
   @override
   void reset() {
     _reset(initValue);
+    super.reset();
   }
 
   @override

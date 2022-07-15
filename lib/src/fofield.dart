@@ -101,7 +101,12 @@ abstract class FOField {
 
   set value(dynamic val);
 
-  void reset();
+  void reset() {
+    if (_status != FOValidStatus.pending) {
+      _status = FOValidStatus.pending;
+      notifyStatus();
+    }
+  }
 
   bool get hasChange;
 

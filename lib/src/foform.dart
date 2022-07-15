@@ -153,6 +153,8 @@ class FOForm {
 
   dynamic eval(String expression) => _root.eval(expression);
 
+  void reset() => _root.reset();
+
   FOField addItem(dynamic data) {
     if (_root is! FOList) throw 'Form data is not list field';
     return (_root as FOList).add(data);

@@ -23,6 +23,7 @@ class FOObject extends FOField {
       notify();
       _resetingNotify = false;
     }
+    super.reset();
   }
 
   @override
