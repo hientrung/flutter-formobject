@@ -154,22 +154,16 @@ class FOEditorProperty extends FOEditorBase {
   ///Widget builder return an editor used to edit value
   final Widget Function(BuildContext context, FOEditorProperty editor) builder;
 
-  ///
-  final VoidCallback? onDispose;
-
   const FOEditorProperty({
     required super.field,
     required this.builder,
     super.key,
-    this.onDispose,
   });
 
   bool get isRequired =>
       (field.meta['rules'] as List<dynamic>?)
           ?.any((it) => it['type'] == 'required') ??
       false;
-
-  String? get holder => field.meta['holder'];
 
   String? get hint => field.meta['hint'];
 
@@ -180,136 +174,90 @@ class FOEditorProperty extends FOEditorBase {
     FOField field, {
     bool obscureText = false,
   }) {
-    final ctrl = TextEditingController(text: field.value);
-    final sub = field.onChanged((value) {
-      if (ctrl.text != value) ctrl.text = value;
-    });
     return FOEditorProperty(
       field: field,
-      onDispose: () => sub.dispose(),
-      builder: (ctx, ed) => FOObserverStatus(
+      builder: (ctx, ed) => FOTextField(
         field: ed.field,
-        builder: (ctx, err) => TextField(
-          controller: ctrl,
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            hintText: ed.hint,
-            helperText: ed.help,
-            labelText: ed.caption,
-            errorText: err,
-          ),
-          onChanged: (v) => ed.field.value = v,
-        ),
+        obscureText: obscureText,
+        caption: ed.caption,
+        requiredMark: ed.isRequired,
+        hint: ed.hint,
+        help: ed.help,
+        formatter: (value) => value == null ? '' : value.toString(),
+        parser: (text) => text,
       ),
     );
   }
 
   factory FOEditorProperty.int(FOField field) {
-    final ctrl = TextEditingController(
-        text: field.value == null ? '' : field.value.toString());
-    final sub = field.onChanged((value) {
-      final s = value == null ? '' : value.toString();
-      if (ctrl.text != s) ctrl.text = s;
-    });
     return FOEditorProperty(
       field: field,
-      onDispose: () => sub.dispose(),
-      builder: (ctx, ed) => FOObserverStatus(
+      builder: (ctx, ed) => FOTextField(
         field: ed.field,
-        builder: (ctx, err) => TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            hintText: ed.hint,
-            helperText: ed.help,
-            labelText: ed.caption,
-            errorText: err,
-          ),
-          onChanged: (v) => ed.field.value = int.tryParse(v),
-        ),
+        caption: ed.caption,
+        requiredMark: ed.isRequired,
+        formatter: (value) => value == null ? '' : value.toString(),
+        parser: (text) => int.tryParse(text),
+        hint: ed.hint,
+        help: ed.help,
+        keyboardType: TextInputType.number,
+        inputFormatter: FilteringTextInputFormatter.digitsOnly,
       ),
     );
   }
 
   factory FOEditorProperty.double(FOField field) {
-    final ctrl = TextEditingController(
-        text: field.value == null ? '' : field.value.toString());
-    final sub = field.onChanged((value) {
-      final s = value == null ? '' : value.toString();
-      if (ctrl.text != s) ctrl.text = s;
-    });
     return FOEditorProperty(
       field: field,
-      onDispose: () => sub.dispose(),
-      builder: (ctx, ed) => FOObserverStatus(
+      builder: (ctx, ed) => FOTextField(
         field: ed.field,
-        builder: (ctx, err) => TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]'))
-          ],
-          decoration: InputDecoration(
-            hintText: ed.hint,
-            helperText: ed.help,
-            labelText: ed.caption,
-            errorText: err,
-          ),
-          onChanged: (v) => ed.field.value = double.tryParse(v),
-        ),
+        caption: ed.caption,
+        requiredMark: ed.isRequired,
+        formatter: (value) => value == null ? '' : value.toString(),
+        parser: (text) => double.tryParse(text),
+        hint: ed.hint,
+        help: ed.help,
+        keyboardType: TextInputType.number,
+        inputFormatter: FilteringTextInputFormatter.allow(RegExp(r'[0-9\.]')),
       ),
     );
   }
 
   factory FOEditorProperty.date(FOField field) {
-    final ctrl = TextEditingController(
-        text:
-            field.value == null ? '' : field.value.toString().substring(0, 10));
-    final sub = field.onChanged((value) {
-      final s = value == null ? '' : value.toString().substring(0, 10);
-      if (ctrl.text != s) ctrl.text = s;
-    });
     return FOEditorProperty(
       field: field,
-      onDispose: () => sub.dispose(),
-      builder: (ctx, ed) => FOObserverStatus(
+      builder: (ctx, ed) => FOTextField(
         field: ed.field,
-        builder: (ctx, err) => TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.datetime,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9\-]'))
-          ],
-          decoration: InputDecoration(
-            hintText: ed.hint ?? 'yyyy-mm-dd',
-            helperText: ed.help,
-            labelText: ed.caption,
-            errorText: err,
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.calendar_month_outlined),
-              onPressed: () async {
-                final d = await showDatePicker(
-                  context: ctx,
-                  initialDate: ed.field.value ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(3000),
-                  initialEntryMode: DatePickerEntryMode.calendarOnly,
-                  initialDatePickerMode: DatePickerMode.day,
-                );
-                if (d != null) ed.field.value = d;
-              },
-            ),
-          ),
-          onChanged: (v) {
-            if (v.isEmpty) ed.field.value = null;
-            try {
-              final d = DateTime.parse(v);
-              if (d.isAfter(DateTime(1900)) && d.isBefore(DateTime(3000))) {
-                ed.field.value = d;
-              }
-              // ignore: empty_catches
-            } catch (ex) {}
+        caption: ed.caption,
+        requiredMark: ed.isRequired,
+        formatter: (value) =>
+            value == null ? '' : value.toString().substring(0, 10),
+        parser: (text) {
+          if (text.isEmpty) return null;
+          try {
+            final d = DateTime.parse(text);
+            if (d.isAfter(DateTime(1900)) && d.isBefore(DateTime(3000))) {
+              return d;
+            }
+            // ignore: empty_catches
+          } catch (ex) {}
+          return null;
+        },
+        hint: ed.hint ?? 'yyyy-mm-dd',
+        help: ed.help,
+        inputFormatter: FilteringTextInputFormatter.allow(RegExp(r'[0-9\-]')),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.calendar_month_outlined),
+          onPressed: () async {
+            final d = await showDatePicker(
+              context: ctx,
+              initialDate: ed.field.value ?? DateTime.now(),
+              firstDate: DateTime(1900),
+              lastDate: DateTime(3000),
+              initialEntryMode: DatePickerEntryMode.calendarOnly,
+              initialDatePickerMode: DatePickerMode.day,
+            );
+            if (d != null) ed.field.value = d;
           },
         ),
       ),
@@ -483,4 +431,113 @@ class FOObserverValue extends FOObserverWidget {
           listenOn: field.onChanged,
           initValue: field.value,
         );
+}
+
+class FOTextField extends StatefulWidget {
+  final FOField field;
+  final String? help;
+  final String? hint;
+  final String caption;
+  final TextInputFormatter? inputFormatter;
+  final String Function(dynamic value) formatter;
+  final dynamic Function(String text) parser;
+  final Widget? suffixIcon;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final bool requiredMark;
+
+  const FOTextField({
+    super.key,
+    required this.field,
+    required this.caption,
+    required this.formatter,
+    required this.parser,
+    this.help,
+    this.hint,
+    this.inputFormatter,
+    this.suffixIcon,
+    this.obscureText = false,
+    this.keyboardType,
+    this.requiredMark = false,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _FOTextFieldState();
+}
+
+class _FOTextFieldState extends State<FOTextField> {
+  late final TextEditingController controller;
+  FOSubscription? sub;
+
+  @override
+  void initState() {
+    super.initState();
+    controller =
+        TextEditingController(text: widget.formatter(widget.field.value));
+    subscribe();
+  }
+
+  @override
+  void didUpdateWidget(covariant FOTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.field != oldWidget.field) {
+      setState(() {
+        controller.text = widget.formatter(widget.field.value);
+        subscribe();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FOObserverStatus(
+      field: widget.field,
+      builder: (ctx, err) => TextField(
+        controller: controller,
+        keyboardType: widget.keyboardType,
+        decoration: InputDecoration(
+          label: widget.requiredMark
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(widget.caption),
+                    Text(
+                      '*',
+                      style: TextStyle(color: Theme.of(ctx).errorColor),
+                    )
+                  ],
+                )
+              : Text(widget.caption),
+          hintText: widget.hint,
+          helperText: widget.help,
+          errorText: err,
+          suffixIcon: widget.suffixIcon,
+        ),
+        obscureText: widget.obscureText,
+        inputFormatters: [
+          if (widget.inputFormatter != null) widget.inputFormatter!,
+        ],
+        onChanged: (value) => widget.field.value = widget.parser(value),
+      ),
+    );
+  }
+
+  void subscribe() {
+    unsubscribe();
+    sub = widget.field.onChanged((value) {
+      final s = widget.formatter(value);
+      if (controller.text != s) controller.text = s;
+    });
+  }
+
+  void unsubscribe() {
+    sub?.dispose();
+  }
+
+  @override
+  void dispose() {
+    unsubscribe();
+    controller.dispose();
+    super.dispose();
+  }
 }
