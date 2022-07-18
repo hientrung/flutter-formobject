@@ -2,12 +2,14 @@ import 'dart:async';
 
 import './fofield.dart';
 
+///A field calculate base on other fields
 class FOExpression extends FOField {
-  late final dynamic initValue;
+  late final dynamic _initValue;
   final String expression;
   dynamic _value;
   bool _shouldUpdate = true;
   final Map<FOField, FOSubscription> _valueDepends = {};
+  bool _first = true;
 
   FOExpression({
     required FOField parent,
@@ -20,6 +22,10 @@ class FOExpression extends FOField {
   dynamic get value {
     super.value;
     _update();
+    if (_first) {
+      _first = false;
+      _initValue = _value;
+    }
     return _value;
   }
 
@@ -29,7 +35,7 @@ class FOExpression extends FOField {
   }
 
   @override
-  bool get hasChange => value != initValue;
+  bool get hasChange => value != _initValue;
 
   void _update() {
     if (!_shouldUpdate) return;
