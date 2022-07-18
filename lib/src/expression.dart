@@ -5,6 +5,7 @@ import './antlr4/ExpressionLexer.dart';
 import './antlr4/ExpressionParser.dart';
 import './antlr4/ExpressionBaseVisitor.dart';
 
+///Evaluate an expression with current field context
 dynamic evaluate(FOField field, String expression) {
   if (expression.isEmpty) return null;
   ExpressionLexer.checkVersion();
