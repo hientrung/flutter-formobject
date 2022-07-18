@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:formobject/formobject.dart';
 
+///Function creator an editor
 typedef FOEditorCreator = FOEditorBase Function(FOField field);
 
+///Register editor
 const registerEditor = FOEditorBase.register;
 
+///Editor for a field
 const editorFor = FOEditorBase.editor;
 
+///A base class for editor
 abstract class FOEditorBase extends StatelessWidget {
   final FOField field;
 
@@ -18,7 +22,10 @@ abstract class FOEditorBase extends StatelessWidget {
     required this.field,
   });
 
+  ///Get help string from meta
   String? get help => field.meta['help'];
+
+  ///Get caption string from meta or field's name
   String get caption => field.meta['caption'] ?? _getCaption();
 
   String _getCaption() {
@@ -30,11 +37,16 @@ abstract class FOEditorBase extends StatelessWidget {
     return n[0].toUpperCase() + n.substring(1);
   }
 
+  ///Editor template registered
   static final Map<String, FOEditorCreator> templates = {};
 
+  ///Register an editor
   static void register(Map<String, FOEditorCreator> sources) =>
       templates.addAll(sources);
 
+  ///Get editor for a field
+  ///Lookup editor base on priority of parameter [template], meta 'template',
+  ///field's full name, field's name, and field's type
   static Widget editor(FOField field, [String? template]) {
     if (templates.isEmpty) _defaultRegister();
     final arr = <String>{
@@ -73,6 +85,7 @@ abstract class FOEditorBase extends StatelessWidget {
   }
 }
 
+///Default editor for form
 class FOEditorForm extends StatelessWidget {
   final FOForm form;
 
@@ -88,6 +101,7 @@ class FOEditorForm extends StatelessWidget {
   }
 }
 
+///Default editor for field 'object'
 class FOEditorObject extends FOEditorBase {
   const FOEditorObject({super.key, required super.field})
       : assert(field is FOObject);
@@ -111,6 +125,7 @@ class FOEditorObject extends FOEditorBase {
   }
 }
 
+///Default editor for field 'list'
 class FOEditorList extends FOEditorBase {
   const FOEditorList({super.key, required super.field});
 
@@ -134,8 +149,12 @@ class FOEditorList extends FOEditorBase {
   }
 }
 
+///Default editor for a property
 class FOEditorProperty extends FOEditorBase {
+  ///Widget builder return an editor used to edit value
   final Widget Function(BuildContext context, FOEditorProperty editor) builder;
+
+  ///
   final VoidCallback? onDispose;
 
   const FOEditorProperty({
