@@ -1,5 +1,8 @@
 import './fofield.dart';
 
+///A field is an object contains child fields that is a nested object or list or a property field
+///
+///Object notify value changed if there are any changed in any child fields
 class FOObject extends FOField {
   final _items = <String, FOField>{};
   final _subs = <String, FOSubscription>{};
@@ -125,6 +128,7 @@ class FOObject extends FOField {
     return _items.map((key, value) => MapEntry(key, value.toJson()));
   }
 
+  ///Add new property
   void add(String name, FOField field) {
     if (_items.containsKey(name)) throw '$name already exist';
     _items[name] = field;
@@ -133,6 +137,7 @@ class FOObject extends FOField {
     }
   }
 
+  ///Remove a property
   void remove(String name) {
     _items.remove(name);
     _subs[name]?.dispose();

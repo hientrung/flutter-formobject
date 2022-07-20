@@ -3,17 +3,33 @@ import 'dart:async';
 import './fofield.dart';
 import './foobject.dart';
 
+///Callback function to validate a value. Return null if value is valid
 typedef FOValidateHandler = FutureOr<String?> Function(dynamic value);
+
+///Callback function used to validate in async validation
 typedef FORequestHandler = Future<dynamic> Function(
     String url, dynamic value, Map<String, dynamic> data);
 
+///Base class for validate value of field
+///
+///If it has condition, then it will be check condition should return true
+///before run validate
 class FOValidator {
+  ///An expression string should return true before run validate
   final String? condition;
+
+  ///Function to validate value. This function must return FutureOr<String?>
+  ///
+  ///If return null then valid, else result string used as error message
   final FOValidateHandler handler;
+
+  ///Field use this validation
   final FOField field;
 
+  ///Create a validator for a field
   FOValidator(this.field, this.handler, this.condition);
 
+  ///Validate value
   FutureOr<String?> validate(dynamic value) {
     var b = true;
     if (condition != null && condition!.isNotEmpty) {
@@ -36,6 +52,7 @@ class FOValidator {
   ///Or the result is string that used for 'message', if string is empty then the value is valid
   static FORequestHandler? requestHandler;
 
+  ///Create a validator from a json config
   static FOValidator? fromJson(FOField field, Map<String, dynamic> meta) {
     var res = <FOValidator>[];
     try {
@@ -121,6 +138,7 @@ class FOValidator {
     return FOValidator.all(field, res);
   }
 
+  ///Check all validation. Return if the first invalid
   factory FOValidator.all(
     FOField field,
     List<FOValidator> validators,
@@ -139,6 +157,7 @@ class FOValidator {
     }, null);
   }
 
+  ///Validate a value must be not null, not equal 0, or not empty string
   factory FOValidator.required(
     FOField field,
     String message,
@@ -155,6 +174,7 @@ class FOValidator {
     );
   }
 
+  ///Validate value must be 'true'
   factory FOValidator.requiredTrue(
     FOField field,
     String message,
@@ -167,6 +187,13 @@ class FOValidator {
     );
   }
 
+  ///Validate value must be in range.
+  ///
+  ///If value is number then it should be >=min and <=max
+  ///
+  ///If value is a list/object then the 'length' property shoud be >=min and <=max
+  ///
+  ///If min or max = null then validation will be ignore check it
   factory FOValidator.range(
     FOField field,
     String message,
@@ -190,6 +217,7 @@ class FOValidator {
     );
   }
 
+  ///Validate value in case it is not empty and must be a email address
   factory FOValidator.email(
     FOField field,
     String message,
@@ -212,6 +240,7 @@ class FOValidator {
     );
   }
 
+  ///Validate value in case it is not empty and must be match the regular expression
   factory FOValidator.match(
     FOField field,
     String message,
@@ -231,6 +260,7 @@ class FOValidator {
     );
   }
 
+  ///Validate value must be equal with value of expression
   factory FOValidator.equal(
     FOField field,
     String message,
@@ -246,6 +276,8 @@ class FOValidator {
     );
   }
 
+  ///Vaidate value by an expression that has result valie is not null,
+  ///not empty string, not zero or must be true
   factory FOValidator.expression(
     FOField field,
     String message,
@@ -266,6 +298,8 @@ class FOValidator {
     );
   }
 
+  ///Validate value by an async process.
+  ///Require implement function Validator.requestHandler to process async validation
   factory FOValidator.service(FOField field, String message, String? condition,
       String url, List<String> fieldNames, int debounce) {
     if (requestHandler == null) {

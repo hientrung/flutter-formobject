@@ -4,10 +4,41 @@ import './foobject.dart';
 import './folist.dart';
 import './foexpression.dart';
 
+///An object contains fields or it can be a field in simple case
+///
+///All fields has value is nullable
 class FOForm {
   final Map<String, dynamic> json;
   late final FOField _root;
 
+  ///Create base on a json contains 'data' and 'meta'
+  ///
+  ///'data': the current value of object
+  ///
+  ///'meta': config the object, type, validation rules, something else used to create editor.
+  ///It must contains ':root' item to access for root item
+  ///
+  ///Example:
+  ///```
+  ///final register = FOForm({
+  ///  'data': {'name': '', 'password': '', 'confirm': ''},
+  ///  'meta': {
+  ///    ':root': {'type': 'object', 'objectType': 'Root'},
+  ///    'Root': {
+  ///      'name': {'type': 'string', 'rules': [
+  ///           {'type': 'required', 'message': 'Required'}
+  ///       ]},
+  ///      'password': {'type': 'string', 'rules': [
+  ///           {'type': 'required', 'message': 'Required'}
+  ///       ]},
+  ///       'confirm': {'type': 'string', 'rules': [
+  ///           {'type': 'required', 'message': 'Required'},
+  ///           {'type': 'equal', 'message': 'Not matched', 'expression': '^.password'}
+  ///       ]},
+  ///   }
+  /// }
+  ///});
+  ///```
   FOForm(this.json) {
     if (!json.containsKey('data')) {
       throw 'Not found key "data" in json';
@@ -126,46 +157,63 @@ class FOForm {
     }
   }
 
+  ///Subscription value changed
   FOSubscription onChanged(FOChangedHandler handler) =>
       _root.onChanged(handler);
 
+  ///Subscription validation status changed
   FOSubscription<FOValidStatus> onStatusChanged(
           FOChangedHandler<FOValidStatus> handler) =>
       _root.onStatusChanged(handler);
 
+  ///Get current value
   dynamic get value => _root.value;
 
+  ///Set current value
   set value(dynamic val) => _root.value = val;
 
+  ///Validate value. Return true if it's valid
   bool validate() => _root.validate();
 
+  ///Current validation is valid or not
   bool get isValid => _root.isValid;
 
+  ///Current status of validation
   FOValidStatus get status => _root.status;
 
+  ///Check value has changed or not
   bool get hasChange => _root.hasChange;
 
+  ///Get list of fields if form is 'list' or 'object'
   Iterable<FOField> get childs => _root.hasChild ? _root.childs : [_root];
 
+  ///Get child field base on index (list) or name (object)
   FOField operator [](dynamic index) => _root.hasChild ? _root[index] : _root;
 
+  ///Current error message of validation
   String? get error => _root.error;
 
+  ///Evaluate an expression base on form context
   dynamic eval(String expression) => _root.eval(expression);
 
+  ///Reset all fields value
   void reset() => _root.reset();
 
+  ///Add an item if form is a 'list'
   FOField addItem(dynamic data) {
     if (_root is! FOList) throw 'Form data is not list field';
     return (_root as FOList).add(data);
   }
 
+  ///Add a property field if form is 'object'
   void addProperty(String name, FOField field) {
     if (_root is! FOObject) throw 'Form data is not object fielld';
     (_root as FOObject).add(name, field);
   }
 
+  ///Release all subscription
   void dispose() => _root.dispose();
 
+  ///Convert to json object
   toJson() => _root.toJson();
 }

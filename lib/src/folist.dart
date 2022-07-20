@@ -1,6 +1,10 @@
 import './fofield.dart';
 
+///A field is a list contains childs fields. All child fields have same type
+///
+///List notify value changed base on add or remove child items (or reset)
 class FOList extends FOField {
+  ///Initial data of list items
   final List<dynamic> initValue;
   final FOField Function(FOList list, dynamic data) creator;
   final _items = <FOField>[];
@@ -90,6 +94,7 @@ class FOList extends FOField {
     return _items.map((e) => e.toJson()).toList();
   }
 
+  ///Add new item with initial value
   FOField add(dynamic data) {
     var field = creator(this, data);
     _items.add(field);
@@ -97,6 +102,7 @@ class FOList extends FOField {
     return field;
   }
 
+  ///Remove an item
   void remove(FOField field) {
     _items.remove(field);
     notify();

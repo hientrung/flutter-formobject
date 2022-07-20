@@ -160,16 +160,19 @@ class FOEditorProperty extends FOEditorBase {
     super.key,
   });
 
+  ///Field is required or not
   bool get isRequired =>
       (field.meta['rules'] as List<dynamic>?)
           ?.any((it) => it['type'] == 'required') ??
       false;
 
+  ///Hint text
   String? get hint => field.meta['hint'];
 
   @override
   Widget build(BuildContext context) => builder(context, this);
 
+  ///Default editor for type 'string'
   factory FOEditorProperty.string(
     FOField field, {
     bool obscureText = false,
@@ -189,6 +192,7 @@ class FOEditorProperty extends FOEditorBase {
     );
   }
 
+  ///Default editor for type 'int'
   factory FOEditorProperty.int(FOField field) {
     return FOEditorProperty(
       field: field,
@@ -206,6 +210,7 @@ class FOEditorProperty extends FOEditorBase {
     );
   }
 
+  ///Default editor for type 'double'
   factory FOEditorProperty.double(FOField field) {
     return FOEditorProperty(
       field: field,
@@ -223,6 +228,7 @@ class FOEditorProperty extends FOEditorBase {
     );
   }
 
+  ///Default editor for type 'DateTime'
   factory FOEditorProperty.date(FOField field) {
     return FOEditorProperty(
       field: field,
@@ -264,6 +270,7 @@ class FOEditorProperty extends FOEditorBase {
     );
   }
 
+  ///Default editor for type 'bool'
   factory FOEditorProperty.bool(FOField field) {
     return FOEditorProperty(
       field: field,
@@ -303,6 +310,7 @@ class FOEditorProperty extends FOEditorBase {
     );
   }
 
+  ///Default display text for field expression
   factory FOEditorProperty.expression(FOField field) {
     return FOEditorProperty(
       field: field,
@@ -316,6 +324,7 @@ class FOEditorProperty extends FOEditorBase {
   }
 }
 
+///Base widget to rebuild base on subscription change
 class FOObserverWidget<T, S> extends StatefulWidget {
   final FOSubscription<S> Function(FOChangedHandler<S>) listenOn;
   final Widget Function(BuildContext context, T value) builder;
@@ -404,6 +413,7 @@ class _FOObserverWidgetState<T, S> extends State<FOObserverWidget<T, S>> {
   }
 }
 
+///Observer widget rebuild on field status changed
 class FOObserverStatus extends FOObserverWidget<String?, FOValidStatus> {
   final FOField field;
 
@@ -419,6 +429,7 @@ class FOObserverStatus extends FOObserverWidget<String?, FOValidStatus> {
         );
 }
 
+///Observer widget rebuild on field value changed
 class FOObserverValue extends FOObserverWidget {
   final FOField field;
 
@@ -433,6 +444,7 @@ class FOObserverValue extends FOObserverWidget {
         );
 }
 
+///A text editor for a field
 class FOTextField extends StatefulWidget {
   final FOField field;
   final String? help;
