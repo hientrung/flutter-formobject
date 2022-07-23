@@ -1,7 +1,6 @@
 import './fofield.dart';
 
-///A field is a primitive value. It supported type is 'string', 'int',
-///'double', 'datetime', 'bool'
+///A field is a primitive value.
 class FOProperty<T> extends FOField {
   T _value;
   final T initValue;

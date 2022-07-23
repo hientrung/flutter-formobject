@@ -276,7 +276,7 @@ class FOValidator {
     );
   }
 
-  ///Vaidate value by an expression that has result valie is not null,
+  ///Vaidate value by an expression that has result value is not null,
   ///not empty string, not zero or must be true
   factory FOValidator.expression(
     FOField field,
