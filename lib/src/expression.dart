@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:antlr4/antlr4.dart';
 import './fofield.dart';
 import './folist.dart';
@@ -101,7 +103,7 @@ class _FOExpressionVisitor extends ExpressionBaseVisitor<dynamic> {
     if (ctx.MOD() != null) return left % right;
     if (ctx.STAR() != null) return left * right;
     if (ctx.DIV() != null) return left / right;
-    if (ctx.POW() != null) return left ^ right;
+    if (ctx.POW() != null) return pow(left, right);
     throw 'Not implemented ${ctx.text}';
   }
 
