@@ -1,6 +1,6 @@
 name: formobject
-description: A new Flutter package project.
-version: 0.0.1
+description: A dynamic objects to build UI widget input value with built-in validation and editor template
+version: 1.0.0
 homepage: https://github.com/hientrung/flutter-formobject
 
 environment:

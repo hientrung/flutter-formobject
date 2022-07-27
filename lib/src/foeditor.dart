@@ -7,10 +7,13 @@ import 'package:formobject/formobject.dart';
 ///Function creator an editor
 typedef FOEditorCreator = FOEditorBase Function(FOField field);
 
-///Register editor
+///Register an editor. A quickly use for [FOEditorBase.register]
 const registerEditor = FOEditorBase.register;
 
-///Editor for a field
+///Get editor for a field. A quickly use for [FOEditorBase.editor]
+///
+///Lookup editor base on priority of parameter [template], meta 'template',
+///field's full name, field's name, and field's type
 const editorFor = FOEditorBase.editor;
 
 ///A base class for editor
